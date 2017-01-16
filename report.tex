@@ -1,0 +1,108 @@
+ss[a4paper,12pt,twoside]{report}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=3cm]{geometry}
+%\geometry{a4} 
+\include{preamble}
+
+%% Language and font encodings
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage[T1]{fontenc}
+
+%% Useful packages
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage[colorlinks=true, allcolors=blue]{hyperref}
+
+\title{We need a title}
+\author{Dylan McCormick`'}
+
+\begin{document}
+\maketitle
+
+\tableofcontents
+
+\begin{abstract}
+\end{abstract}
+
+\chapter{Introduction}
+\section{Project aim}
+\section{Main contributions}
+\chapter{Background}
+
+\section{Compilers \& Code}
+A compiler is a piece of software which produces code in a target language by assembling and interpreting input code in a source language.
+Typically, compilers are used to translate a high-level programming language which describes computation to a human developer [example] into 
+a low-level programming language [example] which is understood by a computer. Due to the complexity of modern languages, systems and computer
+architectures this is not a straightforward translation and compilers have a lot of freedom in how they chose to interpret, transform and analyze
+their input in order to produce output that meets certain requirements. For example, a compiler might reorder certain instructions from the input
+program to produce output code which executes faster than without the instruction reordering.
+[Compilation process diagram]
+
+\subsection{Abstract Syntax Tree}
+An Abstract Syntax Tree (AST) is a tree data structure which represents the abstract syntax of a piece of
+code in a particular language. The syntax is abstract in that it does not necessarily contain all of the
+syntactic elements present in the original code. For example: Grouping parentheses are implied by the
+trees structure and comments do not affect the program's behaviour so are omitted. ASTs are used 
+by compilers to store and reason about an internal representation of the source code.
+
+The specification document for a programming language defines and links the semantic rules that describe 
+how language components behave, to the syntactic ones that define their structure. 
+By applying the syntactic rules to raw text input, the compiler can identify and classify different 
+language components that appear in the source code and build an AST that represents their structure.
+\\
+[Pic of AST]
+\\
+Once the compiler has constructed an AST it can perform semantic analysis on the statements represented
+by the tree and understand the computation expressed by the code. With knowledge of the syntax and 
+semantics of the source code, the compiler can make modifications and optimisations where it can and produce 
+target code which expresses the same computation as the original source code. An AST is a powerful
+data structure for any software that generates and analyses code.
+
+\subsection{Loops}
+A common construct in modern code, especially when implementing numerical methods, is the `loop'. Virtually every program spends most of its 
+time executing loops [Dragon 531], so compiler designers who are interested in optimization dedicate much research to 
+loop transformations and analyses in an effort to reduce their performance impact. The type of loop dealt with in this project is the
+`for loop' which is typically structured as in the figure below [FOR LOOP FIG (Use AST?)]. A `for loop' has a `body' of statements which are repeatedly executed
+while the `loop condition' holds. There are no special constraints on the types of statements that can feature in the body of a for loop so it
+is possible and indeed very common to have a `for loop' present in the body of another `for loop'. Placement of loops within other loops in such a manner
+is called `nesting' and gives rise to the `loop nest' construct which refers to a group of nested loops.
+
+\subsection{Iteration spaces [Dragon 788]}
+% http://dl.acm.org/citation.cfm?id=2458526 Split Tiling
+When analysing and describing iterative computations, particularly with nested iterative components, it can be useful to consider all of the iterations described by the code as points in an 'iteration space'. Each point in an iteration space represents a
+particular assignment of values to the loop indices. Iteration spaces provide a geometric description of loop nests which can be
+transformed and visualised. By considering lines that connect points in an iteration space, the order of iteration or 
+inter-iteration dependencies can also be described.
+
+Take this simple code fragment which iterates over a two-dimensional array and sets its elements to 0
+\\ [Some code here] \\
+Its iteration space is a rectangle of points representing all the combinations of the loop-indices that are within bounds and
+arrows indicate the direction of iteration.
+\\ [Iteration space] \\
+
+A more complex two-dimensional loop nest might perform a computation at each iteration which requires a value from an earlier
+computation.
+\\ [Some code here] \\
+In this case, arrows between points indicate a dependence on the source point by the target point. Both of these iteration 
+spaces are the same shape and size as the two loop nests have the same limits and dimensions, but the
+dependencies created by the loop body in the second example mean that the two spaces cannot be manipulated in the same ways.
+
+Iteration spaces are used throughout this paper to motivate and explain the research and results obtained.
+
+\subsection{Stencils}
+% http://dl.acm.org/citation.cfm?id=1413375
+A computation which iterates over a grid and performs nearest-neighbour computations is known as a stencil. These are
+particularly common when implementing code that deals with numerical methods and partial differential equations.
+Each point in the grid is updated some weighted contributions from a subset of its neighbours [stencilcite]. Figure X (iteration
+space fig 2) is an example of a stencil.
+
+\subsection{Loop optimisations}
+
+\section{DeVito}
+% https://arxiv.org/pdf/1605.06381.pdf
+
+\bibliographystyle{alpha}
+\bibliography{sample}
+
+\end{document}
