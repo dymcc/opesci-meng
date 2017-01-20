@@ -1,4 +1,4 @@
-ss[a4paper,12pt,twoside]{report}
+\documentclass[a4paper,12pt,twoside]{report}
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=3cm]{geometry}
 %\geometry{a4} 
 \include{preamble}
@@ -7,6 +7,7 @@ ss[a4paper,12pt,twoside]{report}
 \usepackage[english]{babel}
 \usepackage[utf8x]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{parskip}
 
 %% Useful packages
 \usepackage{amsmath}
@@ -14,8 +15,8 @@ ss[a4paper,12pt,twoside]{report}
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 
-\title{We need a title}
-\author{Dylan McCormick`'}
+\title{Leveraging CLooG to enable code motion in automatically generated, time-tiled loops for finite difference models}
+\author{Dylan McCormick}
 
 \begin{document}
 \maketitle
@@ -26,11 +27,32 @@ ss[a4paper,12pt,twoside]{report}
 \end{abstract}
 
 \chapter{Introduction}
+Automated code generation is an increasingly important solution to the problem of writing high-performance code
+for mathematical applications. Decades of research in to compiler optimisations and advanced computer architecture developments
+have uncovered a huge number of techniques that can be applied in translating high-level source code into low-level machine code
+to achieve some form of performance increase. The complexity of modern systems and computational problems make it increasingly 
+difficult (and often unrealistic) for a software engineer to produce maximally efficient code by hand even with the help of smart
+compilers. This is additionally challenging for scientists and researchers whose specialization is not in software engineering. Tools
+and frameworks for automatic generation of application-specific high-performance code from high-level or even symbolic input are a very
+attractive option for improving performance of numerical computations.
+
+In the field of scientific computing code with a high arithmetic-intensity is common, particularly where numerical methods are employed.
+Such computations often make extensive use of loops and loop nests to iterate over multi-dimensional structures like grids, matrices or
+polyhedra. The code find inside these loops is typically where these computations spend most of their time, so there is much to be gained
+in terms of performance and efficiency by studying improvements and optimizations that can be made to this type of code, especially when dealing
+with real-world large-scale problems requiring a high degree of accuracy like seismic imaging.
+
+One optimization that can improve the performance of a loop nest is known as loop tiling, which improves data locality and parallelism.
+Loops which have been tiled can sometimes be further optimized in ways that were previously impossible without tiling. For example, 
+applying loop-invariant code motion (LICM) to non-tiled code can sometimes uncover memory-capactiy issues with the 'moved' code which are
+overcome when LICM is applied to tiled code.
+
 \section{Project aim}
 \section{Main contributions}
 \chapter{Background}
 
-\section{Compilers \& Code}
+\section{Fundamentals}
+\subsection{Compilers \& Code}
 A compiler is a piece of software which produces code in a target language by assembling and interpreting input code in a source language.
 Typically, compilers are used to translate a high-level programming language which describes computation to a human developer [example] into 
 a low-level programming language [example] which is understood by a computer. Due to the complexity of modern languages, systems and computer
@@ -39,7 +61,9 @@ their input in order to produce output that meets certain requirements. For exam
 program to produce output code which executes faster than without the instruction reordering.
 [Compilation process diagram]
 
-\subsection{Abstract Syntax Tree}
+Source-to-source compilers, transpilers etc. This project is centered on improving performance of code compiled to machine code.
+
+\subsubsection{Abstract Syntax Tree}
 An Abstract Syntax Tree (AST) is a tree data structure which represents the abstract syntax of a piece of
 code in a particular language. The syntax is abstract in that it does not necessarily contain all of the
 syntactic elements present in the original code. For example: Grouping parentheses are implied by the
@@ -51,7 +75,7 @@ how language components behave, to the syntactic ones that define their structur
 By applying the syntactic rules to raw text input, the compiler can identify and classify different 
 language components that appear in the source code and build an AST that represents their structure.
 \\
-[Pic of AST]
+Pic of AST
 \\
 Once the compiler has constructed an AST it can perform semantic analysis on the statements represented
 by the tree and understand the computation expressed by the code. With knowledge of the syntax and 
@@ -59,7 +83,9 @@ semantics of the source code, the compiler can make modifications and optimisati
 target code which expresses the same computation as the original source code. An AST is a powerful
 data structure for any software that generates and analyses code.
 
-\subsection{Loops}
+\subsubsection{Dependence Analysis}
+
+\subsubsection{Loops}
 A common construct in modern code, especially when implementing numerical methods, is the `loop'. Virtually every program spends most of its 
 time executing loops [Dragon 531], so compiler designers who are interested in optimization dedicate much research to 
 loop transformations and analyses in an effort to reduce their performance impact. The type of loop dealt with in this project is the
@@ -68,39 +94,113 @@ while the `loop condition' holds. There are no special constraints on the types 
 is possible and indeed very common to have a `for loop' present in the body of another `for loop'. Placement of loops within other loops in such a manner
 is called `nesting' and gives rise to the `loop nest' construct which refers to a group of nested loops.
 
-\subsection{Iteration spaces [Dragon 788]}
+\subsubsection{Loop Tiling}
+Loops have a dominant impact on the performance of most programs that make use of them, particularly if loops are nested.
+Most of the time, programmers write loops as succinctly and with as few redundant iterations as possible, making it difficult
+for optimisations to truncate iteration spaces while preserving program correctness. Typically, loop optimisations reshape the
+way a loop nest traverses its iteration space to try and exploit \textit{data locality} in the underlying computer architecture which
+manages the data used by the loop body. There are several common loop optimisations which transform a loop nest structure ie. through
+swapping the order of loop headers to exploit data locality, however the primary optimisation studied in this paper is known as
+\textit{loop tiling}.
+
+\textit{Loop tiling}, also known as \textit{strip mine and interchange} or \textit{loop blocking}, is an optimisation that modifies 
+a loop nest so that rather than repeatedly iterating completely through each dimension of the iteration space until all points are
+visited, the loop nest iterates completely over `tiles' or `blocks' of the iteration space. These tiles are small subsets of the overall
+iteration space which feature points in all dimensions present in the overall iteration space. Fig X compares the iteration space of a non-tiled
+loop nest with that of the same loop nest after the loop-tiling has been applied.
+
+\subsubsection{Iteration spaces [Dragon 788]}
 % http://dl.acm.org/citation.cfm?id=2458526 Split Tiling
-When analysing and describing iterative computations, particularly with nested iterative components, it can be useful to consider all of the iterations described by the code as points in an 'iteration space'. Each point in an iteration space represents a
+When analysing and describing iterative computations, particularly with nested iterative components, it can be useful to consider 
+all of the iterations described by the code as points in an 'iteration space'. Each point in an iteration space represents a
 particular assignment of values to the loop indices. Iteration spaces provide a geometric description of loop nests which can be
 transformed and visualised. By considering lines that connect points in an iteration space, the order of iteration or 
 inter-iteration dependencies can also be described.
 
 Take this simple code fragment which iterates over a two-dimensional array and sets its elements to 0
-\\ [Some code here] \\
+\\ Some code here \\
 Its iteration space is a rectangle of points representing all the combinations of the loop-indices that are within bounds and
 arrows indicate the direction of iteration.
-\\ [Iteration space] \\
+\\ Iteration space \\
 
 A more complex two-dimensional loop nest might perform a computation at each iteration which requires a value from an earlier
 computation.
-\\ [Some code here] \\
+\\ Some code here \\
 In this case, arrows between points indicate a dependence on the source point by the target point. Both of these iteration 
 spaces are the same shape and size as the two loop nests have the same limits and dimensions, but the
 dependencies created by the loop body in the second example mean that the two spaces cannot be manipulated in the same ways.
 
 Iteration spaces are used throughout this paper to motivate and explain the research and results obtained.
 
-\subsection{Stencils}
+\subsubsection{Stencils}
 % http://dl.acm.org/citation.cfm?id=1413375
 A computation which iterates over a grid and performs nearest-neighbour computations is known as a stencil. These are
 particularly common when implementing code that deals with numerical methods and partial differential equations.
 Each point in the grid is updated some weighted contributions from a subset of its neighbours [stencilcite]. Figure X (iteration
 space fig 2) is an example of a stencil.
 
-\subsection{Loop optimisations}
+\subsubsection{Polyhedral model}
+% "A Practical Automatic Polyhedral Parallelizer and Locality Optimizer"
 
-\section{DeVito}
+\subsubsection{Loop optimization}
+
+\section{Related Works}
+\subsection{DeVito}
 % https://arxiv.org/pdf/1605.06381.pdf
+\subsubsection{Motivation}
+\subsubsection{Implementation}
+\subsubsection{Limitations}
+
+\subsection{CLooG}
+CLooG (Chunky Loop Generator) is a free software which generates loops for scanning Z-polyhedra (visiting each integral
+point found within a convex polyhedron in lexicographical order), and is also designed to be
+the back-end to code generation tools that perform automatic parallelism. Its output is pseudo-code loops which visit
+each integral point of a union of polyhedra in such a way as to minimize control overhead and produce efficient code.
+\subsubsection{Motivation}
+The polyhedral model allows reasoning about and solving a wide range of problems related to program transformations,
+in particular where loop nests are involved. When performing these transformations, code generation is usually the last
+step after the abstract structure of the program has been analysed and mutated. There are often constraints on the size of the code
+that can be generated to ensure readability for developers and practicality for users attempting to run the code on their machine,
+however the most concise code is not always the most efficient, and some transformations may generate complicated loop bounds in an effort
+to reduce code size. This type of code can be difficult for a compiler to optimize and for a CPU to schedule in an optimal way due to
+poor control management. CLooG provides an interface for applying polyhedral reasoning techniques to generate code which is optimized for control
+and within the user's requirements of size or complexity.
+
+We considered CLooG as a candidate for the time-tiling back-end for DeVito because of its simplicity in use and its incorporation into
+other tools performing similar tasks as this project's goal. The ability to manually build an input file for a simple example of DeVito's
+output provided an excellent starting point for understanding how both tools work and for obtaining initial results t
+\subsubsection{Implementation}
+CLooG provides a command-line interface which makes use of specially formatted input files (primarily composed of matrices representing
+the sets of inequalities defining an iteration space) to understand the loop nest structure as well as a C library that has structures and
+functions that permit programmatic configuration and execution of the tool.
+Although CLooG is frequently used for making loop-nests parallelizable or more control efficient, it is not concerned with the nature of the
+code found within a loop (apart from other loops), and makes no assumptions whatsoever about dependencies between statements.
+Statements in CLooG are represented abstractly by inequalities that define upon which iterations they are executed and other inequalities
+which encode relative ordering between statements.
+
+Once it has an understanding of the loop nest being transformed, and any additional constraints on statements imposed by the user
+CLooG projects the polyhedra onto one dimension, separates the projection into distinct polyhedra sorted by lexicographic order and 
+recursively generates loop nests for scanning the polyhedra.
+
+\subsubsection{Limitations}
+CLooG is a generalised tool usually used as a back-end to a more specialised tool such as PLUTO or PrimeTile [citations] which
+apply polyhedral theory to transform a given loop nest to enhance parallelism or data locality and delegate cloog to generate
+efficient code to scan the new polyhedron. CLooG itself however, is not automated in any way and must be driven with a problem
+specification that includes inequalities defining your iteration space, and 'scattering functions' which dictate the scheduling
+of statements. This makes standalone usage of CLooG somewhat restrictive, but integration into DeVito's code generation pipeline
+very attractive. An additional technical constraint of CLooG is that it provides a command-line interface and C libraries only,
+limiting its ability to interface with other languages such as Python which is common in scientific computing applications.
+\section{Pluto}
+
+% http://drona.csa.iisc.ac.in/~uday//publications/uday-cc08.pdf
+
+
+\chapter{Project Plan}
+Drive CLooG manually to produce time-tiled code for basic example \\
+Perform experiments and record changes in performance \\
+Implement support for automated usage of CLooG by DeVito to time-tile Devito Code \\
+Evaluate results on a larger scale with more diverse examples
+
 
 \bibliographystyle{alpha}
 \bibliography{sample}
