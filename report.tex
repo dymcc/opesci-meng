@@ -26,6 +26,7 @@
 \begin{abstract}
 \end{abstract}
 
+%%% INTRODUCTION %%%
 \chapter{Introduction}
 Automated code generation is an increasingly important solution to the problem of writing high-performance code
 for mathematical applications. Decades of research in to compiler optimisations and advanced computer architecture developments
@@ -108,7 +109,7 @@ loop transformations and analyses in an effort to reduce their performance impac
 `for loop' which is typically structured as in the figure below [FOR LOOP FIG (Use AST?)]. A `for loop' has a `body' of statements which are repeatedly executed
 while the `loop condition' holds. There are no special constraints on the types of statements that can feature in the body of a for loop so it
 is possible and indeed very common to have a `for loop' present in the body of another `for loop'. Placement of loops within other loops in such a manner
-is called `nesting' and gives rise to the `loop nest' construct which refers to a group of nested loops.
+	is called `nesting' and gives rise to the `loop nest' construct which refers to a group of nested loops. /// Perfect loop nest
 
 \subsubsection{Loop Tiling}
 Loops have a dominant impact on the performance of most programs that make use of them, particularly if loops are nested.
@@ -160,18 +161,16 @@ space fig 2) is an example of a stencil.
 
 \subsubsection{Loop optimization}
 
+%%% RELATED WORKS %%%
 \section{Related Works}
-\subsection{DeVito}
-% https://arxiv.org/pdf/1605.06381.pdf
-\subsubsection{Motivation}
-\subsubsection{Implementation}
-\subsubsection{Limitations}
 
+%%% CLOOG %%%
 \subsection{CLooG}
 CLooG (Chunky Loop Generator) is a free software which generates loops for scanning Z-polyhedra (visiting each integral
 point found within a convex polyhedron in lexicographical order), and is also designed to be
 the back-end to code generation tools that perform automatic parallelism. Its output is pseudo-code loops which visit
 each integral point of a union of polyhedra in such a way as to minimize control overhead and produce efficient code.
+
 \subsubsection{Motivation}
 The polyhedral model allows reasoning about and solving a wide range of problems related to program transformations,
 in particular where loop nests are involved. When performing these transformations, code generation is usually the last
@@ -206,11 +205,54 @@ specification that includes inequalities defining your iteration space, and 'sca
 of statements. This makes standalone usage of CLooG somewhat restrictive, but integration into DeVito's code generation pipeline
 very attractive. An additional technical constraint of CLooG is that it provides a command-line interface and C libraries only,
 limiting its ability to interface with other languages such as Python which is common in scientific computing applications.
-\section{Pluto}
 
+%%% PLUTO %%%
+\section{Pluto}
+PLuTo is an open-source tool for automatic polyhedral parallelization and locality optimization. Using CLooG as a code generation
+back-end, PLuTo applies analytical model-driven transformations in the polyhedral model [cite] to improve the performance
+of regular programs containing loop nests. One of the primary features of PLuTo is its automatic exploration of the space
+of potential program transformations to identify and apply the most effective loop tiling.
+
+\subsection{Motivation}
+Like CLooG, PLuTo is motivated by the powerful abstraction provided by the Polyhedral model when reasoning about and optimizing loop
+nests. However PLuTo is more specifically concerned with how loop tiling can improve parallelism and data locality, especially
+for applications run on massively parallel architectures like those frequently seen in scientific computing applications. The framework
+takes a step further yet by applying analytical methods to intelligently find optimal transformations and tilings with code dependencies in mind.
+The tool's design is indicative of its intended usage in optimizing existing code, possibly developed before a tool as capable as PLuTo was developed.
+
+\subsection{Implementation}
+PLuTo operates as a source-to-source optimization tool, taking as input a sequence of nested loops in source-code format
+and producing a transformed sequences of loops in source code. The research and behind PLuTo is on automated transformations,
+not dependence analysis or source-code parsing, so it delegates the task of interpreting input and determining dependencies
+to another tool in the polyhedral space, LooPo. The transformation framework implemented in PLuTo takes polyhedral domains representing the iteration
+spaces of the original program, as well as dependence polyhedra which encode the dependence structure of the input source-code.
+
+The transformation framework within PLuTo makes use of a bounding cost function to reason about dependences and iteration domains
+geometrically and to provide a target to minimise when identifying optimal transformations. The cost function can be formulated
+as a system of Integer Linear Programming (ILP) problems which encode legality and cost constraints and can be solved by the Simplex
+algorithm. The framework iteratively augments and solves ILP problems to find multiple independent solutions for each statement. With
+these solutions, PLuTo is able to construct matrices representing the transformed domains and statement dependencies which can be
+given as input to CLooG for code generation.
+
+\subsection{Limitations}
+PLuTo is a powerful tool that makes many informed analyses to drive its automated search for optimal transformations, and its integration
+with other polyhedral tools make it a well-documented practical tool for users looking to apply source-to-source loop transformations. However
+PLuTo's generality and source-to-source nature make it unsuitable for direct application in the DeVito pipline. With the specific structure and
+nature of code generated by DeVito, assumptions can be made that greatly reduce the work a tool like PLuTo would need to do in determining
+dependencies and optimal transformations, but the general approach PLuTo takes prevents these assumptions from being made. The source-code level
+is also a low-level representation that restricts what can be done by DeVito after the transformations take place and would require premature
+generation of source code to feed as input to PLuTo.
+% https://pdfs.semanticscholar.org/d94d/d6f9ef3e15f3737738ad840647c9d23055cc.pdf
 % http://drona.csa.iisc.ac.in/~uday//publications/uday-cc08.pdf
 
+%%% DeVito %%%
+\chapter{DeVito}
+% https://arxiv.org/pdf/1605.06381.pdf
+\subsubsection{Motivation}
+\subsubsection{Implementation}
+\subsubsection{Limitations}
 
+%%% PROJECT PLAN - Pathway to success %%%
 \chapter{Project Plan}
 Drive CLooG manually to produce time-tiled code for basic example \\
 Perform experiments and record changes in performance \\
