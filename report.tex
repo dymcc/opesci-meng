@@ -107,9 +107,7 @@ semantics of the source code, the compiler can make modifications and optimizati
 target code which expresses the same computation as the original source code. An AST is a powerful
 data structure for any software that generates and analyses code.
 
-\subsection{Dependence Analysis?}
-
-\subsubsection{Loops}
+\subsection{Loops}
 A common construct in modern code, especially when implementing numerical methods, is the `loop'. Virtually every program spends most of its 
 time executing loops [Dragon 531], so compiler designers who are interested in optimization dedicate much research to 
 loop transformations and analyses in an effort to reduce their performance impact. The type of loop dealt with in this project is the
@@ -118,7 +116,7 @@ while the `loop condition' holds. There are no special constraints on the types 
 is possible and indeed very common to have a `for loop' present in the body of another `for loop'. Placement of loops within other loops in such a manner
 	is called `nesting' and gives rise to the `loop nest' construct which refers to a group of nested loops. /// Perfect loop nest
 
-\subsubsection{Loop Tiling}
+\subsection{Loop Tiling}
 Loops have a dominant impact on the performance of most programs that make use of them, particularly if loops are nested.
 Most of the time, programmers write loops as succinctly and with as few redundant iterations as possible, making it difficult
 for optimizations to truncate iteration spaces while preserving program correctness. Typically, loop optimizations reshape the
@@ -136,7 +134,7 @@ present in the original code.
 
 Fig X compares the iteration space of a non-tiled loop nest with that of the same loop nest after the loop-tiling has been applied.
 
-\subsubsection{Iteration spaces [Dragon 788]}
+\subsection{Iteration spaces [Dragon 788]}
 % http://dl.acm.org/citation.cfm?id=2458526 Split Tiling
 When analysing and describing iterative computations, particularly with nested iterative components, it can be useful to consider 
 all of the iterations described by the code as points in an 'iteration space'. Each point in an iteration space represents a
@@ -159,7 +157,7 @@ dependencies created by the loop body in the second example mean that the two sp
 
 Iteration spaces are used throughout this paper to motivate and explain the research and results obtained.
 
-\subsubsection{Polyhedral model}
+\subsection{Polyhedral model}
 % "A Practical Automatic Polyhedral Parallelizer and Locality Optimizer"
 The Polyhedral model is a powerful abstraction for reasoning about loop nests and loop transformations [cite] that builds on the
 geometric representation of loop iterations described in an iteration space. Each iteration of a statement is viewed as an
@@ -167,7 +165,7 @@ integral point within a polyhedron that contains all iterations of the statement
 of the dependencies between statements, linear algebra and linear programming techniques can be applied to transform and scan
 the iteration spaces they represent.
 
-\subsubsection{Stencils}
+\subsection{Stencils}
 % http://dl.acm.org/citation.cfm?id=1413375
 A computation which iterates over a grid and performs nearest-neighbour computations is known as a stencil. These are
 particularly common when implementing code that deals with numerical methods and partial differential equations.
@@ -181,7 +179,7 @@ point found within a convex polyhedron in lexicographical order), and is also de
 the back-end to code generation tools that perform automatic parallelism. Its output is pseudo-code loops which visit
 each integral point of a union of polyhedra in such a way as to minimize control overhead and produce efficient code.
 
-\subsubsection{Motivation}
+\subsection{Motivation}
 The polyhedral model allows reasoning about and solving a wide range of problems related to program transformations,
 in particular where loop nests are involved. When performing these transformations, code generation is usually the last
 step after the abstract structure of the program has been analysed and mutated. There are often constraints on the size of the code
@@ -194,7 +192,7 @@ and within the user's requirements of size or complexity.
 We considered CLooG as a candidate for the time-tiling back-end for Devito because of its simplicity in use and its incorporation into
 other tools performing similar tasks as this project's goal. The ability to manually build an input file for a simple example of Devito's
 output provided an excellent starting point for understanding how both tools work and for obtaining initial results.
-\subsubsection{Implementation}
+\subsection{Implementation}
 CLooG provides a command-line interface which makes use of specially formatted input files (primarily composed of matrices representing
 the sets of inequalities defining an iteration space) to understand the loop nest structure as well as a C library that has structures and
 functions that permit programmatic configuration and execution of the tool.
@@ -207,7 +205,7 @@ Once it has an understanding of the loop nest being transformed, and any additio
 CLooG projects the polyhedra onto one dimension, separates the projection into distinct polyhedra sorted by lexicographic order and 
 recursively generates loop nests for scanning the polyhedra. MORE ON THIS
 
-\subsubsection{Limitations}
+\subsection{Limitations}
 CLooG is a generalised tool usually used as a back-end to a more specialised tool such as PLUTO or PrimeTile [citations] which
 apply polyhedral theory to transform a given loop nest to enhance parallelism or data locality and delegate cloog to generate
 efficient code to scan the new polyhedron. CLooG itself however, is not automated in any way and must be driven with a problem
