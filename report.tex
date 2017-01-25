@@ -277,25 +277,23 @@ from the developer.
 
 \subsection*{Design}
 The high-level architecture of Devito can be broken into four steps;
-\begin{itemize}
+\begin{enumerate}
     \item Create Devito data objects which associate SymPy function symbols with user data
     \item Build symbolic stencil equations using the created data objects
     \item Build Devito Operator object using symbolic equations
     \item Instruct the Devito Operator to generate low-level optimized code applied to user data
     \item Compile using user-defined compiler settings
-\end{itemize}
+\end{enumerate}
 One of the key benefits of using Devito is the automatic generation of abstract array accesses upon creation of the Operator object. This 
 creates an intermediate representation (IR) of the stencil which is then optimized and translated into C when triggered by the user using the Operator
 in a process called 'propagation'. It is during this propagation stage that loops are generated, and so this is the point in the process where
 Devito will analyse the IR and delegate to CLooG to tile the structure being generated. The objects that make up the IR allow
 Devito to programmatically reason about the loop and dependence structure of the kernel which will form the primary input for CLooG's transformation.
 
-\subsection*{Implementation}
 Devito takes its form as a Python library that provides an API for users to create and manage objects that define and configure all of the components
 in the code generation pipeline. To make the most of the native Python environment and the practical benefits it brings, Devito does not define its 
 own high-level DSL in the traditional sense, instead it makes use of and extends the powerful SymPy Python library for symbolic mathematics. 
 The familiar abstraction provided by a native python library allows users to separate implementation and optimization concerns from the numerical computation at hand.
-\subsubsection*{Loop generation}
 
 
 
