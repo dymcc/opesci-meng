@@ -14,6 +14,7 @@
 \usepackage{graphicx}
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
+\renewcommand{\baselinestretch}{1.2}
 
 \title{Applying the polyhedral model to tile loops in Devito}
 \author{Dylan McCormick}
@@ -22,9 +23,6 @@
 \maketitle
 
 \tableofcontents
-
-\begin{abstract}
-\end{abstract}
 
 %%% INTRODUCTION %%%
 \chapter{Introduction}
@@ -76,7 +74,7 @@ The contributions of this project are as follows;
 \chapter{Background}
 
 \section{Fundamentals}
-\subsection{Compilers}
+\subsection*{Compilers}
 A compiler is a piece of software which produces code in a target language by assembling and interpreting input code in a source language.
 Typically, compilers are used to translate a high-level programming language which describes computation to a human developer [example] into 
 a low-level programming language [example] which is understood by a computer. Due to the complexity of modern languages, systems and computer
@@ -87,7 +85,7 @@ program to produce output code which executes faster than without the instructio
 
 Source-to-source compilers, transpilers etc. This project is centered on improving performance of code compiled to machine code.
 
-\subsection{Abstract Syntax Tree}
+\subsection*{Abstract Syntax Tree}
 An Abstract Syntax Tree (AST) is a tree data structure which represents the abstract syntax of a piece of
 code in a particular language. The syntax is abstract in that it does not necessarily contain all of the
 syntactic elements present in the original code. For example: Grouping parentheses are implied by the
@@ -107,7 +105,7 @@ semantics of the source code, the compiler can make modifications and optimizati
 target code which expresses the same computation as the original source code. An AST is a powerful
 data structure for any software that generates and analyses code.
 
-\subsection{Loops}
+\subsection*{Loops}
 A common construct in modern code, especially when implementing numerical methods, is the `loop'. Virtually every program spends most of its 
 time executing loops [Dragon 531], so compiler designers who are interested in optimization dedicate much research to 
 loop transformations and analyses in an effort to reduce their performance impact. The type of loop dealt with in this project is the
@@ -116,7 +114,7 @@ while the `loop condition' holds. There are no special constraints on the types 
 is possible and indeed very common to have a `for loop' present in the body of another `for loop'. Placement of loops within other loops in such a manner
 	is called `nesting' and gives rise to the `loop nest' construct which refers to a group of nested loops. /// Perfect loop nest
 
-\subsection{Loop Tiling}
+\subsection*{Loop Tiling}
 Loops have a dominant impact on the performance of most programs that make use of them, particularly if loops are nested.
 Most of the time, programmers write loops as succinctly and with as few redundant iterations as possible, making it difficult
 for optimizations to truncate iteration spaces while preserving program correctness. Typically, loop optimizations reshape the
@@ -134,7 +132,8 @@ present in the original code.
 
 Fig X compares the iteration space of a non-tiled loop nest with that of the same loop nest after the loop-tiling has been applied.
 
-\subsection{Iteration spaces [Dragon 788]}
+\subsection*{Iteration spaces}
+[Dragon 788]
 % http://dl.acm.org/citation.cfm?id=2458526 Split Tiling
 When analysing and describing iterative computations, particularly with nested iterative components, it can be useful to consider 
 all of the iterations described by the code as points in an 'iteration space'. Each point in an iteration space represents a
@@ -157,7 +156,7 @@ dependencies created by the loop body in the second example mean that the two sp
 
 Iteration spaces are used throughout this paper to motivate and explain the research and results obtained.
 
-\subsection{Polyhedral model}
+\subsection*{Polyhedral model}
 % "A Practical Automatic Polyhedral Parallelizer and Locality Optimizer"
 The Polyhedral model is a powerful abstraction for reasoning about loop nests and loop transformations [cite] that builds on the
 geometric representation of loop iterations described in an iteration space. Each iteration of a statement is viewed as an
@@ -165,7 +164,7 @@ integral point within a polyhedron that contains all iterations of the statement
 of the dependencies between statements, linear algebra and linear programming techniques can be applied to transform and scan
 the iteration spaces they represent.
 
-\subsection{Stencils}
+\subsection*{Stencils}
 % http://dl.acm.org/citation.cfm?id=1413375
 A computation which iterates over a grid and performs nearest-neighbour computations is known as a stencil. These are
 particularly common when implementing code that deals with numerical methods and partial differential equations.
@@ -179,7 +178,7 @@ point found within a convex polyhedron in lexicographical order), and is also de
 the back-end to code generation tools that perform automatic parallelism. Its output is pseudo-code loops which visit
 each integral point of a union of polyhedra in such a way as to minimize control overhead and produce efficient code.
 
-\subsection{Motivation}
+\subsection*{Motivation}
 The polyhedral model allows reasoning about and solving a wide range of problems related to program transformations,
 in particular where loop nests are involved. When performing these transformations, code generation is usually the last
 step after the abstract structure of the program has been analysed and mutated. There are often constraints on the size of the code
@@ -192,7 +191,7 @@ and within the user's requirements of size or complexity.
 We considered CLooG as a candidate for the time-tiling back-end for Devito because of its simplicity in use and its incorporation into
 other tools performing similar tasks as this project's goal. The ability to manually build an input file for a simple example of Devito's
 output provided an excellent starting point for understanding how both tools work and for obtaining initial results.
-\subsection{Implementation}
+\subsection*{Implementation}
 CLooG provides a command-line interface which makes use of specially formatted input files (primarily composed of matrices representing
 the sets of inequalities defining an iteration space) to understand the loop nest structure as well as a C library that has structures and
 functions that permit programmatic configuration and execution of the tool.
@@ -205,7 +204,7 @@ Once it has an understanding of the loop nest being transformed, and any additio
 CLooG projects the polyhedra onto one dimension, separates the projection into distinct polyhedra sorted by lexicographic order and 
 recursively generates loop nests for scanning the polyhedra. MORE ON THIS
 
-\subsection{Limitations}
+\subsection*{Limitations}
 CLooG is a generalised tool usually used as a back-end to a more specialised tool such as PLUTO or PrimeTile [citations] which
 apply polyhedral theory to transform a given loop nest to enhance parallelism or data locality and delegate cloog to generate
 efficient code to scan the new polyhedron. CLooG itself however, is not automated in any way and must be driven with a problem
@@ -221,14 +220,14 @@ back-end, PLuTo applies analytical model-driven transformations in the polyhedra
 of regular programs containing loop nests. One of the primary features of PLuTo is its automatic exploration of the space
 of potential program transformations to identify and apply the most effective loop tiling.
 
-\subsection{Motivation}
+\subsection*{Motivation}
 Like CLooG, PLuTo is motivated by the powerful abstraction provided by the Polyhedral model when reasoning about and optimizing loop
 nests. However PLuTo is more specifically concerned with how loop tiling can improve parallelism and data locality, especially
 for applications run on massively parallel architectures like those frequently seen in scientific computing applications. The framework
 takes a step further yet by applying analytical methods to intelligently find optimal transformations and tilings with code dependencies in mind.
 The tool's design is indicative of its intended usage in optimizing existing code, possibly developed before a tool as capable as PLuTo was developed.
 
-\subsection{Implementation}
+\subsection*{Implementation}
 PLuTo operates as a source-to-source optimization tool, taking as input a sequence of nested loops in source-code format
 and producing a transformed sequences of loops in source code. The research and behind PLuTo is on automated transformations,
 not dependence analysis or source-code parsing, so it delegates the task of interpreting input and determining dependencies
@@ -242,7 +241,7 @@ algorithm. The framework iteratively augments and solves ILP problems to find mu
 these solutions, PLuTo is able to construct matrices representing the transformed domains and statement dependencies which can be
 given as input to CLooG for code generation.
 
-\subsection{Limitations}
+\subsection*{Limitations}
 PLuTo is a powerful tool that makes many informed analyses to drive its automated search for optimal transformations, and its integration
 with other polyhedral tools make it a well-documented practical tool for users looking to apply source-to-source loop transformations. It
 delivers a more specialised, automated solution than using CLooG alone, and allows with existing code to perform optimizations without having to 
@@ -261,7 +260,7 @@ Devito is a Domain-specific Language and code generation framework for producing
 code for finite-difference computations. It uses user-generated high-level symbolic problem descriptions to automatically
 generate and optimise high-performance parallel C code for a range of computer architectures.
 % https://arxiv.org/pdf/1605.06381.pdf
-\subsubsection{Motivation}
+\subsubsection*{Motivation}
 Modern high-performance computing applications need to make use of the latest developments in computer architecture to produce truly
 powerful solutions. As modern technologies become more powerful they also become more complex with massively parallel systems like
 GPGPU (General Purpose Graphics Processing Unit) and advanced architectural capabilities such as vectorization providing opportunities
@@ -276,8 +275,9 @@ power and optimizations available to C code. By using a domain-specific language
 for describing numerical computations and perform code generation with aggressive optimizations to produce faster programs that require less HPC expertise
 from the developer.
 
-\subsubsection{Implementation}
-\subsubsection{Limitations}
+\subsubsection*{Design}
+
+\subsubsection*{Implementation}
 
 %%% PROJECT PLAN - Pathway to success %%%
 \chapter{Project Plan}
