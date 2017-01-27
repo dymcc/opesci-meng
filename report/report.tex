@@ -1,7 +1,7 @@
 \documentclass[a4paper,12pt,twoside]{report}
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=3cm]{geometry}
 %\geometry{a4} 
-\include{preamble}
+%\include{preamble}
 
 %% Language and font encodings
 %\usepackage[english]{babel}
@@ -107,12 +107,14 @@ is possible and indeed very common to have a `for loop' present in the body of a
 is called `nesting' and gives rise to the `loop nest' construct which refers to a group of nested loops. When a loop nest is structured
 such that all of its statements are found in the innermost loop body it is known as a `perfect loop nest`.
 
-\begin{figure}
+\begin{figure}[h]
     \begin{lstlisting}
-        for(int i=0; i < LIMIT; i++){ //Loop header defines bounds and step operation
-            ...                       //Loop body contains code executed at each step
+        //Loop header defines bounds and step operation
+        for(int i=0; i < LIMIT; i++){
+            //Loop body contains code executed at each step
+            ...
         }
-    \end{listing}
+    \end{lstlisting}
     \caption{The structure of a simple for loop in C}
     \label{fig:forloop}
 \end{figure}
@@ -127,7 +129,7 @@ transformed and visualised. By considering connections between points in an iter
 inter-iteration dependencies can also be described.
 
 Take this simple code fragment which iterates over a two-dimensional array and sets its elements to 0
-\begin{figure}
+\begin{figure}[h]
     \begin{lstlisting}[language=C]
         int array2d[5][10];
 
@@ -147,7 +149,8 @@ Take this simple code fragment which iterates over a two-dimensional array and s
 Its iteration space is a rectangle of points representing all the combinations of the loop-indices that are within bounds and
 arrows indicate the direction of iteration.
 
-\begin{figure}
+\begin{figure}[h]
+    \centering
     \includegraphics[scale=0.75]{iteration_space}
     \caption{A representation of the iteration space for \ref{fig:2dloop}}
     \label{fig:iteration_space}
@@ -156,13 +159,14 @@ arrows indicate the direction of iteration.
 A more complex two-dimensional loop nest might perform a computation at each iteration which requires a value from an earlier
 computation.
 
-\begin{figure}
+\begin{figure}[h]
     \begin{lstlisting}[language=C]
         int array2d[100][100];
 
         for(int i=1; i<100; i++){
             for(int j=1; j<100; j++){
-                array2d[i][j] = array2d[i-1][j] + 2*array2d[i][j-1];
+                array2d[i][j] = array2d[i-1][j] 
+                              + 2*array2d[i][j-1];
             }
         }
     \end{lstlisting}
@@ -323,7 +327,7 @@ generate and optimise high-performance parallel C code for a range of computer a
 Devito generates are used to solve partial differential equations that are primarily used for simulations typical in the oil and gas industry.
 % https://arxiv.org/pdf/1605.06381.pdf
 
-\section*{Motivation}
+\section{Motivation}
 Modern high-performance computing applications need to make use of the latest developments in computer architecture to produce truly
 powerful solutions. As modern technologies become more powerful they also become more complex with massively parallel systems like
 GPGPU (General Purpose Graphics Processing Unit) and advanced architectural capabilities such as vectorization providing opportunities
@@ -338,7 +342,7 @@ power and optimizations available to C code. By using a domain-specific language
 that describes numerical computations and perform code generation with aggressive optimizations to produce faster programs that require less HPC expertise
 from the developer.
 
-\section*{Design}
+\section{Design}
 The high-level architecture of Devito can be broken into four steps;
 \begin{enumerate}
     \item Create Devito data objects which associate SymPy function symbols with user data
@@ -347,6 +351,22 @@ The high-level architecture of Devito can be broken into four steps;
     \item Instruct the Devito Operator to generate low-level optimized code applied to user data
     \item Compile using user-defined compiler settings
 \end{enumerate}
+
+\begin{figure}[h]
+    \begin{lstlisting}[language=Python]
+        # Function symbols associated with user data
+        u = TimeData('u', shape=(nx, ny))
+        n = DenseData('m', shape=(nx, ny))
+        # Symbolic equation the creates finite-difference stencils
+        eqn = m * u.dt2 - u.laplace
+        # Devito operator that transforms stencils into array accesses
+        op = Operator(eqn)
+        # Generate low-level code applied to data with Propagator
+        u = op.apply(u.data, m.data)
+    \end{lstlisting}
+    \caption{ This simplified sequence of statements shows the basic Devito code-generation process from a user's perspective }
+\end{figure}
+
 One of the key benefits of using Devito is the automatic generation of abstract array accesses upon creation of the Operator object. This 
 creates an intermediate representation (IR) of the stencil which is then optimized and translated into C when triggered by the user using the Operator
 in a process called 'propagation'. It is during this propagation stage that loops are generated, and so this is the point in the process where
@@ -413,7 +433,7 @@ have a measurable improvement on kernel run time.
         \begin{itemize}
             \item \textbf{Acoustic wave equation:} Wave equations are linked to many physical phenomena (TJ cite) and the acoustic wave equation (AWE) describes the propagation
                 of acoustic waves through a medium. AWE kernels typically have few operations in the main loop body which update grid points over time based on
-                the values at other grid points that are nearby in both space and time. The code in (Figure) is an example of the main loop kernel for the AWE 
+                the values at other grid points that are nearby in both space and time. The code in \ref{fig:acoustic} is an example of the main loop kernel for the AWE 
                 in one dimension. The relative simplicity of this problem makes it suitable for manually-configured experiments as well as being a good exercise 
                 in understanding what transformations CLooG can perform and how to drive it to produce them.
             \item \textbf{Tilted Transverse Isotropy:} The TTI problem is similar to the AWE as it also models wave propagation but is more complex in that it can be
@@ -447,8 +467,6 @@ have a measurable improvement on kernel run time.
 \end{itemize}
 
 \begin{figure}[h]
-    \caption{A simplified presentation of the main loop for an acoustic wave equation kernel in 1D (TJ cite). Here a point grid \texttt{u} at time
-    \texttt{n+1} is calculated by a weighted combination of nearby points \texttt{i+1} and \texttt{i-1} in the previous two timesteps \texttt{n} and \texttt{n-1}}
     \begin{lstlisting}[language=C]
         for(int t=1; t<T; t++){ //time loop
             for(int i=1; i<N; i++){ //1D space loop
@@ -457,6 +475,11 @@ have a measurable improvement on kernel run time.
             }
         }
     \end{lstlisting}
+    \caption{
+        A simplified presentation of the main loop for an acoustic wave equation kernel in 1D (TJ cite). Here a point grid \texttt{u} at time
+        \texttt{n+1} is calculated by a weighted combination of nearby points \texttt{i+1} and \texttt{i-1} in the previous two timesteps \texttt{n} and \texttt{n-1}
+    }
+    \label{fig:acoustic}
 \end{figure}
 
 \section{Risks}
