@@ -1,0 +1,201 @@
+@article{opesci-fd,
+  title={OPESCI-FD: Automatic Code Generation Package for Finite Difference Models},
+  author={Sun, Tianjiao},
+  journal={arXiv preprint arXiv:1605.06381},
+  year={2016}
+}
+
+@article{devito-dsl,
+  author    = {Michael Lange and
+               Navjot Kukreja and
+               Mathias Louboutin and
+               Fabio Luporini and
+               Felippe Vieira and
+               Vincenzo Pandolfo and
+               Paulius Velesko and
+               Paulius Kazakas and
+               Gerard Gorman},
+  title     = {Devito: Towards a generic Finite Difference {DSL} using Symbolic Python},
+  journal   = {CoRR},
+  volume    = {abs/1609.03361},
+  year      = {2016},
+  url       = {http://arxiv.org/abs/1609.03361},
+  timestamp = {Mon, 03 Oct 2016 17:51:10 +0200},
+  biburl    = {http://dblp.uni-trier.de/rec/bib/journals/corr/LangeKLLVPVKG16},
+  bibsource = {dblp computer science bibliography, http://dblp.org}
+}
+@article{devito-fd,
+  author    = {Navjot Kukreja and
+               Mathias Louboutin and
+               Felippe Vieira and
+               Fabio Luporini and
+               Michael Lange and
+               Gerard Gorman},
+  title     = {Devito: automated fast finite difference computation},
+  journal   = {CoRR},
+  volume    = {abs/1608.08658},
+  year      = {2016},
+  url       = {http://arxiv.org/abs/1608.08658},
+  timestamp = {Fri, 02 Sep 2016 17:46:24 +0200},
+  biburl    = {http://dblp.uni-trier.de/rec/bib/journals/corr/KukrejaLVLLG16},
+  bibsource = {dblp computer science bibliography, http://dblp.org}
+}
+
+@inproceedings{uniform-loop,
+ author = {Pugh, William},
+ title = {Uniform Techniques for Loop Optimization},
+ booktitle = {Proceedings of the 5th International Conference on Supercomputing},
+ series = {ICS '91},
+ year = {1991},
+ isbn = {0-89791-434-1},
+ location = {Cologne, West Germany},
+ pages = {341--352},
+ numpages = {12},
+ url = {http://doi.acm.org/10.1145/109025.109108},
+ doi = {10.1145/109025.109108},
+ acmid = {109108},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+}
+
+@misc(DevitoTTI,
+ author = {opesci},
+ title = {Devito: TTI example},
+ publisher = {GitHub},
+ journal = {GitHub repository},
+ howpublished={\url{https://github.com/opesci/devito/tree/master/examples/tti}},
+}
+
+@misc(DevitoAcoustic,
+ author = {opesci},
+ title = {Devito: Acoustic wave equation example},
+ publisher = {GitHub},
+ journal = {GitHub repository},
+ howpublished={\url{https://github.com/opesci/devito/tree/master/examples/acoustic}},
+}
+
+@inproceedings{stencil,
+ author = {Datta, Kaushik and Murphy, Mark and Volkov, Vasily and Williams, Samuel and Carter, Jonathan and Oliker, Leonid and Patterson, David and Shalf, John and Yelick, Katherine},
+ title = {Stencil Computation Optimization and Auto-tuning on State-of-the-art Multicore Architectures},
+ booktitle = {Proceedings of the 2008 ACM/IEEE Conference on Supercomputing},
+ series = {SC '08},
+ year = {2008},
+ isbn = {978-1-4244-2835-9},
+ location = {Austin, Texas},
+ pages = {4:1--4:12},
+ articleno = {4},
+ numpages = {12},
+ url = {http://dl.acm.org/citation.cfm?id=1413370.1413375},
+ acmid = {1413375},
+ publisher = {IEEE Press},
+ address = {Piscataway, NJ, USA},
+} 
+
+
+
+@article{pluto,
+ author = {Bondhugula, Uday and Hartono, Albert and Ramanujam, J. and Sadayappan, P.},
+ title = {A Practical Automatic Polyhedral Parallelizer and Locality Optimizer},
+ journal = {SIGPLAN Not.},
+ issue_date = {June 2008},
+ volume = {43},
+ number = {6},
+ month = jun,
+ year = {2008},
+ issn = {0362-1340},
+ pages = {101--113},
+ numpages = {13},
+ url = {http://doi.acm.org/10.1145/1379022.1375595},
+ doi = {10.1145/1379022.1375595},
+ acmid = {1375595},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {affine transformations, automatic parallelization, locality optimization, loop transformations, polyhedral model, tiling},
+} 
+
+@TECHREPORT{cloog,
+    author = {Cédric Bastoul},
+    title = {Generating loops for scanning polyhedra: CLooG user’s guide},
+    institution = {},
+    year = {2002}
+}
+
+
+@Article{polyhedra-algo,
+author="Quiller{\'e}, Fabien
+and Rajopadhye, Sanjay
+and Wilde, Doran",
+title="Generation of Efficient Nested Loops from Polyhedra",
+journal="International Journal of Parallel Programming",
+year="2000",
+volume="28",
+number="5",
+pages="469--498",
+abstract="Automatic parallelization in the polyhedral model is based on affine transformations from an original computation domain (iteration space) to a target space-time domain, often with a different transformation for each variable. Code generation is an often ignored step in this process that has a significant impact on the quality of the final code. It involves making a trade-off between code size and control code simplification/optimization. Previous methods of doing code generation are based on loop splitting, however they have nonoptimal behavior when working on parameterized programs. We present a general parameterized method for code generation based on dual representation of polyhedra. Our algorithm uses a simple recursion on the dimensions of the domains, and enables fine control over the tradeoff between code size and control overhead.",
+issn="1573-7640",
+doi="10.1023/A:1007554627716",
+url="http://dx.doi.org/10.1023/A:1007554627716"
+}
+
+
+@inproceedings{ram-polyhedral,
+ author = {Bondhugula, Uday and Baskaran, Muthu and Krishnamoorthy, Sriram and Ramanujam, J. and Rountev, Atanas and Sadayappan, P.},
+ title = {Automatic Transformations for Communication-minimized Parallelization and Locality Optimization in the Polyhedral Model},
+ booktitle = {Proceedings of the Joint European Conferences on Theory and Practice of Software 17th International Conference on Compiler Construction},
+ series = {CC'08/ETAPS'08},
+ year = {2008},
+ isbn = {3-540-78790-9, 978-3-540-78790-7},
+ location = {Budapest, Hungary},
+ pages = {132--146},
+ numpages = {15},
+ url = {http://dl.acm.org/citation.cfm?id=1788374.1788386},
+ acmid = {1788386},
+ publisher = {Springer-Verlag},
+ address = {Berlin, Heidelberg},
+} 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@MISC{primetile,
+    author = {Albert Hartono and Muthu Manik and An Baskaran and Cédric Bastoul and Albert Cohen and Sriram Krishnamoorthy and Boyana Norris and J. Ramanujam},
+    title = {PrimeTile: A Parametric Multi-Level Tiler for Imperfect Loop Nests},
+    year = {}
+}
+
+
+
+
+
+
+@book{dragon,
+  title={Compilers: Principles, Techniques, and Tools},
+  author={Aho, A.V. and Sethi, R. and Ullman, J.D.},
+  isbn={9780201100884},
+  lccn={lc85015647},
+  series={Addison-Wesley series in computer science and information processing},
+  url={https://books.google.co.uk/books?id=-4Q\_AQAAIAAJ},
+  year={1986},
+  publisher={Addison-Wesley Publishing Company}
+}
+
