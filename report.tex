@@ -54,14 +54,14 @@ attractive option for improving performance of numerical computations.
 
 % http://dl.acm.org/citation.cfm?id=109108
 
-\section{Loop tiling}
+\section*{Loop tiling}
 One optimization that can improve the performance of a loop nest is known as `loop tiling', which improves data locality and parallelism.
 Loops which have been tiled can sometimes be further optimized in ways that were previously impossible. For example, 
 loop-invariant code motion (LICM) transformations on non-tiled code can be restricted by available memory when 'moving'
 statements from within a loop with a high number of iterations. This limitation can be overcome when LICM is applied to tiled code.
 Loop tiling is one of the primary optimizations researched during this project.
 
-\section{Main contributions}
+\section*{Main contributions}
 The contributions of this project are as follows;
 \begin{itemize}
 	\item{Identify an opportunity for loop-tiling optimizations to be applied by Devito}
@@ -73,7 +73,7 @@ The contributions of this project are as follows;
 
 \chapter{Background}
 
-\section{Fundamentals}
+\section*{Fundamentals}
 \subsection*{Compilers}
 A compiler is a piece of software which produces code in a target language by assembling and interpreting input code in a source language.
 Typically, compilers are used to translate a high-level programming language which describes computation to a human developer [example] into 
@@ -85,26 +85,6 @@ program to produce output code which executes faster than without the instructio
 
 Source-to-source compilers, transpilers etc. This project is centered on improving performance of code compiled to machine code.
 
-\subsection*{Abstract Syntax Tree}
-An Abstract Syntax Tree (AST) is a tree data structure which represents the abstract syntax of a piece of
-code in a particular language. The syntax is abstract in that it does not necessarily contain all of the
-syntactic elements present in the original code. For example: Grouping parentheses are implied by the
-trees structure and comments do not affect the program's behaviour so are omitted. ASTs are used 
-by compilers to store and reason about an internal representation of the source code.
-
-The specification document for a programming language defines and links the semantic rules that describe 
-how language components behave, to the syntactic ones that define their structure. 
-By applying the syntactic rules to raw text input, the compiler can identify and classify different 
-language components that appear in the source code and build an AST that represents their structure.
-\\
-Pic of AST
-\\
-Once the compiler has constructed an AST it can perform semantic analysis on the statements represented
-by the tree and understand the computation expressed by the code. With knowledge of the syntax and 
-semantics of the source code, the compiler can make modifications and optimizations where it can and produce 
-target code which expresses the same computation as the original source code. An AST is a powerful
-data structure for any software that generates and analyses code.
-
 \subsection*{Loops}
 A common construct in modern code, especially when implementing numerical methods, is the `loop'. Virtually every program spends most of its 
 time executing loops [Dragon 531], so compiler designers who are interested in optimization dedicate much research to 
@@ -113,24 +93,6 @@ loop transformations and analyses in an effort to reduce their performance impac
 while the `loop condition' holds. There are no special constraints on the types of statements that can feature in the body of a for loop so it
 is possible and indeed very common to have a `for loop' present in the body of another `for loop'. Placement of loops within other loops in such a manner
 	is called `nesting' and gives rise to the `loop nest' construct which refers to a group of nested loops. /// Perfect loop nest
-
-\subsection*{Loop Tiling}
-Loops have a dominant impact on the performance of most programs that make use of them, particularly if loops are nested.
-Most of the time, programmers write loops as succinctly and with as few redundant iterations as possible, making it difficult
-for optimizations to truncate iteration spaces while preserving program correctness. Typically, loop optimizations reshape the
-way a loop nest traverses its iteration space to try and exploit \textit{data locality} in the underlying computer architecture which
-manages the data used by the loop body. There are several common loop optimizations which transform a loop nest structure ie. through
-swapping the order of loop headers to exploit data locality, however the primary optimization studied in this paper is known as
-\textit{loop tiling}.
-
-\textit{Loop tiling}, also known as \textit{strip mine and interchange} or \textit{loop blocking}, is an optimization that modifies 
-a loop nest so that rather than repeatedly iterating completely through each dimension of the iteration space until all points are
-visited, the loop nest iterates completely over `tiles' or `blocks' of the iteration space. Tiling transformations group points of
-the original iteration space into blocks which promote data reuse as the smaller blocks fit into fast memory and reduce the time between
-uses of the same memory locations. In addition to improving data locality, loop tiling can also create opportunities for parallelism not 
-present in the original code.
-
-Fig X compares the iteration space of a non-tiled loop nest with that of the same loop nest after the loop-tiling has been applied.
 
 \subsection*{Iteration spaces}
 [Dragon 788]
@@ -171,8 +133,34 @@ particularly common when implementing code that deals with numerical methods and
 Each point in the grid is updated some weighted contributions from a subset of its neighbours [stencilcite]. Figure X (iteration
 space fig 2) is an example of a stencil.
 
+%%% LOOP TILING %%%
+\section*{Loop optimizations}
+Loops have a dominant impact on the performance of most programs that make use of them, particularly if loops are nested.
+Most of the time, programmers write loops as succinctly and with as few redundant iterations as possible, making it difficult
+for optimizations to truncate iteration spaces while preserving program correctness. Typically, loop optimizations reshape the
+way a loop nest traverses its iteration space to try and exploit \textit{data locality} in the underlying computer architecture which
+manages the data used by the loop body. There are several common loop optimizations which transform a loop nest structure ie. through
+swapping the order of loop headers to exploit data locality, however the primary optimization studied in this project is \textit{loop tiling}.
+
+\subsection*{Data locality}
+Modern computer architectures have a hierarchy of data caches which store data under locality assumptions that memory locations close to each other
+are likely to be used within a short period of time (spatial locality) and that a memory location is likely to be reused (temporal locality). 
+When statements in a loop body access a memory location, it is loaded into the data cache hierarchy along with nearby memory locations to pre-empt probable future uses.
+However non-optimized loop structures may not make use of this data before it is evicted from the cache by another memory access.
+A common goal of loop optimizations is to improve data locality across iterations so that expensive fetches from slower memory can be avoided 
+and caching techniques are more efficiently utilised.
+
+\subsection*{Loop tiling}
+\textit{Loop tiling}, also known as \textit{strip mine and interchange} or \textit{loop blocking}, is an optimization that modifies 
+a loop nest so that it iterates completely over `tiles' or `blocks' of the iteration space, rather than repeatedly iterating 
+completely through each dimension of the iteration space until all points are visited. Tiling transformations group points of
+the original iteration space into blocks. The resulting blocks have smaller iteration bounds and so the innermost loops are completed more often,
+reducing the amount of time before nearby data accesses occur and improving data locality. The tile size can be chosen such that memory locations
+required in a full loop execution fit into the cache and prevent excessive eviction. In addition to improving data locality, loop tiling can also 
+create opportunities for parallelism not present in the original code.
+
 %%% CLOOG %%%
-\section{CLooG}
+\section*{CLooG}
 CLooG (Chunky Loop Generator) is a free software which generates loops for scanning Z-polyhedra (visiting each integral
 point found within a convex polyhedron in lexicographical order), and is also designed to be
 the back-end to code generation tools that perform automatic parallelism. Its output is pseudo-code loops which visit
@@ -191,6 +179,7 @@ and within the user's requirements of size or complexity.
 We considered CLooG as a candidate for the time-tiling back-end for Devito because of its simplicity in use and its incorporation into
 other tools performing similar tasks as this project's goal. The ability to manually build an input file for a simple example of Devito's
 output provided an excellent starting point for understanding how both tools work and for obtaining initial results.
+
 \subsection*{Implementation}
 CLooG provides a command-line interface which makes use of specially formatted input files (primarily composed of matrices representing
 the sets of inequalities defining an iteration space) to understand the loop nest structure as well as a C library that has structures and
@@ -200,9 +189,21 @@ code found within a loop (apart from other loops), and makes no assumptions what
 Statements in CLooG are represented abstractly by inequalities that define upon which iterations they are executed and other inequalities
 which encode relative ordering between statements.
 
-Once it has an understanding of the loop nest being transformed, and any additional constraints on statements imposed by the user
-CLooG projects the polyhedra onto one dimension, separates the projection into distinct polyhedra sorted by lexicographic order and 
-recursively generates loop nests for scanning the polyhedra. MORE ON THIS
+\subsubsection*{Algorithm}
+The algorithm employed by CLooG for visiting the integral points of the specified polyhedra is presented in in a simplified form.
+For each dimension in the iteration space described by the user input, proceeding from outermost to innermost loops;
+\begin{enumerate}
+    \item Project the polyhedra onto the corresponding dimension 
+    \item Separate the projections into disjoint polyhedra which represent, in this dimension, either the overlapped iteration
+        space of multiple statements, or the unique iteration space of a single statement. At this stage, the contraints in the current
+        dimension give loop bounds for scanning the polyhedra in this dimension. The constraints in the other dimensions are guards on 
+        the statements in other dimensions.
+    \item Recurse for each polyhedron, projecting in the next dimension.
+    \item Sort the resulting loops so that they scan the polyhedra in lexicographical order.
+\end{enumerate}
+At this stage CLooG has enough information to pretty-print the loops into code.
+
+\subsubsection*{Scattering functions}
 
 \subsection*{Limitations}
 CLooG is a generalised tool usually used as a back-end to a more specialised tool such as PLUTO or PrimeTile [citations] which
@@ -214,7 +215,7 @@ very attractive. An additional technical constraint of CLooG is that it provides
 limiting its ability to interface with other languages such as Python which is common in scientific computing applications.
 
 %%% PLUTO %%%
-\section{Pluto}
+\section*{Pluto}
 PLuTo is an open-source tool for automatic polyhedral parallelization and locality optimization. Using CLooG as a code generation
 back-end, PLuTo applies analytical model-driven transformations in the polyhedral model [cite] to improve the performance
 of regular programs containing loop nests. One of the primary features of PLuTo is its automatic exploration of the space
@@ -295,8 +296,6 @@ in the code generation pipeline. To make the most of the native Python environme
 own high-level DSL in the traditional sense, instead it makes use of and extends the powerful SymPy Python library for symbolic mathematics. 
 The familiar abstraction provided by a native python library allows users to separate implementation and optimization concerns from the numerical computation at hand.
 
-
-
 %%% PROJECT PLAN - Pathway to success %%%
 \chapter{Project Plan}
 Need Timeline!
@@ -346,6 +345,9 @@ have a measurable improvement on kernel run time.
         so that differences in execution time are more pronounced. Based on the results obtained at this stage, changes can be made to the configuration
         of CLooG as corrections or experiments with different tiling parameters. If the results indicate performance improvements then the project can advance
         to the implementation stage.
+        \begin{itemize}
+            \item Two problems of particular interest when performing these experiments are the acoustic wave problem (need to ask fabio about this)...
+        \end{itemize}
     \item Before implementation can fully begin, it is important that the design chosen for implementing a code generation back end to Devito be considered carefully.
         CLooG does not provide a native Python API and so with a project timescale in mind, a plausible implementation plan should be made.
     \item After the implementation stage, tests should be performed to ensure the numerical correctness of generated kernels and that transformations are
@@ -368,6 +370,33 @@ have a measurable improvement on kernel run time.
         (fewer misses) and increased FLOPs.
     \item Since Devito is a user-facing tool, feedback should also be obtained regarding the applicability and usability of the new features.
 \end{itemize}
+
+\section*{Risks}
+Even with the domain-specific context in which Devito operates, the problems for which it generates code can vary significantly in their practical application
+as well as their implementation. The theory of how loop tiling can improve performance is understood, but that does not mean tiled code which experiences better
+data locality that non tiled code results in better program run time. There are other potential bottlenecks during program execution which could be the dominating
+restrictions on execution time for certain kernels, preventing the tiling transformations from having a noticeable improvement.
+
+\subsection*{Arithmetic Intensity}
+Arithmetic intensity is the ratio of FLOPS per byte of memory traffic and indicates how memory-bound or computationally-bound a given program is.
+This metric is often used in the context of the Roofline model which provides a visual model of the relationship between memory and computational bounds for a
+given system. 
+//
+(Diagram of roofline model with caption  identifying memroy-bound and performance-bound areas)
+//
+Some Devito kernels (such as one implementing an acoustic wave equation) have a small number of statements in their innermost loop, which typically
+implies that upon each iteration a small number of floating point operations are performed to update a small area of the grid. Other kernels derived from different 
+equations might have many hundreds of statements in their innermost loop, so at each iteration many statements perform local floating point operations before updating
+a small section of the grid. The arithmetic intensity for the latter type of kernels can be significantly higher than for the former, and for such programs
+we might expect loop tiling to have limited performance benefit since the computational power of the executing system is already being pushed near its limit. This makes
+the initial experiments particularly important as they should allow us to identify to what extent the tiling transformations will impact the different types of kernel
+Devito can generate.
+
+\subsection*{Architecture}
+The benefits realized by tiling loops to improve data locality are highly dependent on the architecture of the system upon which the code is executed. Tiling parameters
+effect the size and shape of the memory space that is accessed by a loop nest, and an optimal tiling transformation will configure the iteration space such that it both
+properly fits and makes the most use of the architecture's underlying memory hierarchy. When designing and testing tiling configurations care must be taken that
+relevant architectures are considered and that parameters are chosen which best suit the executing system.
 
 %%% CITATIONS %%%
 \chapter{Citations}
