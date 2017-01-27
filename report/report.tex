@@ -146,8 +146,7 @@ Take this simple code fragment which iterates over a two-dimensional array and s
         \label{fig:2dloop}
 \end{figure}
 
-Its iteration space is a rectangle of points representing all the combinations of the loop-indices that are within bounds and
-arrows indicate the direction of iteration.
+Its iteration space is a rectangle of points representing all the combinations of the loop-indices that are within bounds.
 
 \begin{figure}[h]
     \centering
@@ -181,9 +180,9 @@ inter-iteration dependencies since the loop body makes no reference to array ele
 
 \subsection{Stencils}
 % http://dl.acm.org/citation.cfm?id=1413375
-A computation which iterates over a grid and performs nearest-neighbour computations is known as a stencil. These are
+A computation which iterates over a grid and performs nearest-neighbour computations is known as a stencil . These are
 particularly common when implementing code that deals with numerical methods and partial differential equations.
-Each point in the grid is updated some weighted contributions from a subset of its neighbours [stencilcite]. \ref{fig:stencil} is an example of a stencil.
+Each point in the grid is updated some weighted contributions from a subset of its neighbours \cite{stencil}. \ref{fig:stencil} is an example of a stencil.
 
 \subsection{Data locality}
 Modern computer architectures have a hierarchy of data caches which store data under locality assumptions that memory locations close to each other
@@ -202,7 +201,7 @@ manages the data used by the loop body. There are several common loop optimizati
 swapping the order of loop headers to exploit data locality, however the primary optimization studied in this project is \textit{loop tiling}.
 
 \subsection{Loop tiling}
-\textit{Loop tiling}, also known as \textit{strip mine and interchange} or \textit{loop blocking}, is an optimization that modifies 
+\textit{Loop tiling}, also known as \textit{strip mine and interchange} or \textit{loop blocking}\cite{dragon}, is an optimization that modifies 
 a loop nest so that it iterates completely over `tiles' or `blocks' of the iteration space, rather than repeatedly iterating 
 completely through each dimension of the iteration space until all points are visited. Tiling transformations group points of
 the original iteration space into blocks. The resulting blocks have smaller iteration bounds and so the innermost loops are completed more often,
@@ -211,8 +210,7 @@ required in a full loop execution fit into the cache and prevent excessive evict
 create opportunities for parallelism not present in the original code.
 
 \subsection{Polyhedral model}
-% "A Practical Automatic Polyhedral Parallelizer and Locality Optimizer"
-The Polyhedral model is a powerful abstraction for reasoning about loop nests and loop transformations [cite] that builds on the
+The Polyhedral model is a powerful abstraction for reasoning about loop nests and loop transformations \cite{pluto} that builds on the
 geometric representation of loop iterations described in an iteration space. Each iteration of a statement is viewed as an
 integral point within a polyhedron that contains all iterations of the statement. With a polyhedron for each statement and an understanding
 of the dependencies between statements, linear algebra and linear programming techniques can be applied to transform and scan
@@ -222,7 +220,7 @@ the iteration spaces they represent.
 %%% CLooG %%%
 \section{CLooG}
 CLooG (Chunky Loop Generator) is a free software which generates loops that visit each integral
-point found within a convex polyhedron in lexicographical order. It is also designed to be
+point found within a convex polyhedron in lexicographical order \cite{cloog}. It is also designed to be
 the back-end to code generation tools that perform automatic parallelism. Its output is pseudo-code loops which visit
 each integral point of a union of polyhedra in such a way as to minimize control overhead and produce efficient code.
 
@@ -251,7 +249,7 @@ For example the loop body in \ref{fig:stencil} is described to CLooG by its doma
 \[i \ge 1 , i < 100 , j \ge 1, j < 100 \]
 
 \subsubsection{Algorithm}
-The algorithm employed by CLooG for visiting the integral points of the specified polyhedra is presented in in a simplified form.
+The algorithm employed by CLooG for visiting the integral points of the specified polyhedra \cite{polyhedra-algo} is presented in in a simplified form.
 For each dimension in the iteration space described by the user input, proceeding from outermost to innermost loops;
 \begin{enumerate}
     \item Project the polyhedra onto the corresponding dimension 
@@ -265,7 +263,7 @@ For each dimension in the iteration space described by the user input, proceedin
 At this stage CLooG has enough information to pretty-print the loops into code.
 
 \subsection{Limitations}
-CLooG is a tool usually used as a back-end to a more specialised tool such as PLUTO or PrimeTile [citations] which
+CLooG is a tool usually used as a back-end to a more specialised tool such as PLUTO \cite{pluto} or PrimeTile \cite{primetile} which
 apply polyhedral theory to transform a given loop nest to enhance parallelism or data locality and delegate CLooG to generate
 efficient code to scan the new polyhedron. CLooG itself however, is not automated in any way and must be driven with a problem
 specification that includes inequalities defining the iteration space, and optional `scattering functions' which encode the scheduling
@@ -275,8 +273,8 @@ limiting its ability to interface with other languages such as Python which is c
 
 %%% PLUTO %%%
 \section{Pluto}
-PLuTo is an open-source tool for automatic polyhedral parallelization and locality optimization. Using CLooG as a code generation
-back-end, PLuTo applies analytical model-driven transformations in the polyhedral model [cite] to improve the performance
+PLuTo \cite{pluto} is an open-source tool for automatic polyhedral parallelization and locality optimization. Using CLooG as a code generation
+back-end, PLuTo applies analytical model-driven transformations in the polyhedral model \cite{ram-polyhedral} to improve the performance
 of regular programs containing loop nests. One of the primary features of PLuTo is its automatic exploration of the space
 of potential program transformations to identify and apply the most effective loop tiling.
 
@@ -311,13 +309,11 @@ nature of code generated by Devito, assumptions can be made that greatly reduce 
 dependencies and optimal transformations, but the general approach PLuTo takes prevents these assumptions from being made. The source-code level
 is also a low-level representation that restricts what can be done by Devito after the transformations take place and would require premature
 generation of source code to feed as input to PLuTo.
-% https://pdfs.semanticscholar.org/d94d/d6f9ef3e15f3737738ad840647c9d23055cc.pdf
-% http://drona.csa.iisc.ac.in/~uday//publications/uday-cc08.pdf
 
 %%% Devito %%%
 \chapter{Devito}
-Devito is a domain-specific language (DSL) and code generation framework that produces highly-optimised
-code for finite-difference computations. It uses high-level symbolic problem descriptions that can be hand-written to automatically
+Devito \cite{devito-fd}, \cite{devito-dsl}, is a domain-specific language (DSL) and code generation framework that produces highly-optimised
+code for finite-difference computations \cite{opesci-fd}. It uses high-level symbolic problem descriptions that can be hand-written to automatically
 generate and optimise high-performance parallel C code for a range of computer architectures. The finite-difference kernels that
 Devito generates are used to solve partial differential equations that are primarily used for simulations typical in the oil and gas industry.
 % https://arxiv.org/pdf/1605.06381.pdf
@@ -368,7 +364,7 @@ The high-level architecture of Devito can be broken into four steps;
     # Generate low-level code applied to data with Propagator
     op.apply()
     \end{lstlisting}
-    \caption{ Setup code for generating a Diffusion kernel in Devito}
+    \caption{ Setup code for generating a Diffusion kernel in Devito \cite{devitoi-dsl}
     \label{fig:diffusion_devito}
 \end{figure}
 
@@ -380,45 +376,45 @@ Devito to programmatically reason about the loop and dependence structure of the
 
 \begin{figure}[h]
     \begin{lstlisting}[language=C]
-        extern ‘‘C’’ int Operator(float *u_vec)
-        {
-            float (*u)[1000][1000] = (float (*)[1000][1000]) u_vec;
-            {
-                int t0;
-                int t1;
-                #pragma omp parallel
-                for (int i3 = 0; i3<500; i3+=1)
-                {
-                    #pragma omp single
-                    {
-                        t0 = (i3)%(2);
-                        t1 = (t0 + 1)%(2);
+      extern ‘‘C’’ int Operator(float *u_vec)
+      {
+          float (*u)[1000][1000] = (float (*)[1000][1000]) u_vec;
+          {
+              int t0;
+              int t1;
+              #pragma omp parallel
+              for (int i3 = 0; i3<500; i3+=1)
+              {
+                  #pragma omp single
+                  {
+                      t0 = (i3)%(2);
+                      t1 = (t0 + 1)%(2);
 
-                    }
-                    {
-                        #pragma omp for schedule(static)
-                        for (int i1 = 1; i1<999; i1++)
-                        {
-                            #pragma omp simd aligned(u:64)
-                            for (int i2 = 1; i2<999; i2++)
-                            {
-                                u[t1][i1][i2] = 2.5e-1F*u[t0][i1][i2-1]
-                                              + 2.5e-1F*u[t0][i1][i2+1]
-                                              + 2.5e-1F*u[t0][i1-1][i2]
-                                              + 2.5e-1F*u[t0][i1+1][i2];
+                  }
+                  {
+                      #pragma omp for schedule(static)
+                      for (int i1 = 1; i1<999; i1++)
+                      {
+                          #pragma omp simd aligned(u:64)
+                          for (int i2 = 1; i2<999; i2++)
+                          {
+                              u[t1][i1][i2] = 2.5e-1F*u[t0][i1][i2-1]
+                                            + 2.5e-1F*u[t0][i1][i2+1]
+                                            + 2.5e-1F*u[t0][i1-1][i2]
+                                            + 2.5e-1F*u[t0][i1+1][i2];
 
-                            }
+                          }
 
-                        }
+                      }
 
-                    }
+                  }
 
-                }
+              }
 
-            }
-        }
+          }
+      }
     \end{lstlisting}
-    \caption{Auto-generated C code to solve the diffusion example in \ref{fig:diffusion_devito}}
+    \caption{Auto-generated C code to solve the diffusion example in \ref{fig:diffusion_devito} \cite{dsl}}
     \label{fig:diffusion_C}
 \end{figure}
 
@@ -443,7 +439,7 @@ Need Timeline!
                 loop tiling and the code-generation interface CLooG provides. At present, we have successfully created a basic input file
                 which describes a simple Devito kernel and run CLooG with it, however additional input constraints need to be understood and implemented
                 before the output from these runs is interesting.
-            \item To put Devito kernels in a state where they are ready to be transformed by CLooG, a feature was added to Devito's loop generation process
+            \item To put Devito ke
                 which strip-mines the outer time loop in preparation for the tiling body transformations we intend for CLooG to make. This step was required as CLooG
                 transformations cannot add extra dimensionality to a loop nest.
         \end{itemize}
@@ -527,6 +523,7 @@ have a measurable improvement on kernel run time.
     \caption{
         A simplified presentation of the main loop for an acoustic wave equation kernel in 1D (TJ cite). Here a point grid \texttt{u} at time
         \texttt{n+1} is calculated by a weighted combination of nearby points \texttt{i+1} and \texttt{i-1} in the previous two timesteps \texttt{n} and \texttt{n-1}
+		\cite{opesci-fd}
     }
     \label{fig:acoustic}
 \end{figure}
@@ -539,11 +536,6 @@ restrictions on execution time for certain kernels, preventing the tiling transf
 
 \subsection{Arithmetic Intensity}
 Arithmetic intensity is the ratio of FLOPS per byte of memory traffic and indicates how memory-bound or computationally-bound a given program is.
-This metric is often used in the context of the Roofline model which provides a visual model of the relationship between memory and computational bounds for a
-given system. 
-//
-(Diagram of roofline model with caption  identifying memroy-bound and performance-bound areas)
-//
 Some Devito kernels (such as one implementing an acoustic wave equation) have a small number of statements in their innermost loop, which typically
 implies that upon each iteration a small number of floating point operations are performed to update a small area of the grid. Other kernels derived from different 
 equations might have many hundreds of statements in their innermost loop, so at each iteration many statements perform local floating point operations before updating
