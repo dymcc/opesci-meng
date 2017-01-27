@@ -84,7 +84,7 @@ The contributions of this project are as follows;
 \chapter{Background}
 
 \section{Fundamentals}
-\subsection*{Compilers}
+\subsection{Compilers}
 A compiler is a piece of software which produces code in a target language by assembling and interpreting input code in a source language.
 Typically, compilers are used to translate a high-level programming language which describes computation to a human developer [example] into 
 a low-level programming language [example] which is understood by a computer. Due to the complexity of modern languages, systems and computer
@@ -93,11 +93,11 @@ their input in order to produce output that meets certain requirements. For exam
 program to produce output code which executes faster than without the instruction reordering.
 [Compilation process diagram]
 
-In addition to common `general purpose compilers` (such as \texttt{gcc} or \texttt{javac} which compile C and java programs respectively),
-there are `high-level compilers` which don't generate low-level executable code and `domain-specific compilers` which somtimes operate on
+In addition to common `general purpose compilers' (such as \texttt{gcc} or \texttt{javac} which compile C and java programs respectively),
+there are `high-level compilers' which don't generate low-level executable code and `domain-specific compilers' which somtimes operate on
 custom language inputs and are designed for programs in a particular field.
 
-\subsection*{Loops}
+\subsection{Loops}
 A common construct in modern code, especially when implementing numerical methods, is the `loop'. Virtually every program spends most of its 
 time executing loops [Dragon 531], so compiler designers who are interested in optimization dedicate much research to 
 loop transformations and analyses in an effort to reduce their performance impact. The type of loop dealt with in this project is the
@@ -105,10 +105,10 @@ loop transformations and analyses in an effort to reduce their performance impac
 while the `loop condition' holds. There are no special constraints on the types of statements that can feature in the body of a for loop so it
 is possible and indeed very common to have a `for loop' present in the body of another `for loop'. Placement of loops within other loops in such a 
 is called `nesting' and gives rise to the `loop nest' construct which refers to a group of nested loops. When a loop nest is structured
-such that all of its statements are found in the innermost loop body it is known as a `perfect loop nest`.
+such that all of its statements are found in the innermost loop body it is known as a `perfect loop nest'.
 
 \begin{figure}[h]
-    \begin{lstlisting}
+    \begin{lstlisting}[language=C]
         //Loop header defines bounds and step operation
         for(int i=0; i < LIMIT; i++){
             //Loop body contains code executed at each step
@@ -119,14 +119,14 @@ such that all of its statements are found in the innermost loop body it is known
     \label{fig:forloop}
 \end{figure}
 
-\subsection*{Iteration spaces}
+\subsection{Iteration spaces}
 [Dragon 788]
 % http://dl.acm.org/citation.cfm?id=2458526 Split Tiling
 When analysing and describing iterative computations, particularly with nested iterative components, it can be useful to consider 
 all of the iterations described by the code as points in an 'iteration space'. Each point in an iteration space represents a
 particular assignment of values to the loop indices. Iteration spaces provide a geometric description of loop nests which can be
 transformed and visualised. By considering connections between points in an iteration space, the order of iteration or 
-inter-iteration dependencies can also be described.
+inter-iteration dependencies can also be described. Iteration spaces are used throughout this paper to explain the research and results obtained.
 
 Take this simple code fragment which iterates over a two-dimensional array and sets its elements to 0
 \begin{figure}[h]
@@ -141,7 +141,7 @@ Take this simple code fragment which iterates over a two-dimensional array and s
     \end{lstlisting}
         \caption{
             This is loop nest iterates over a two-dimensional structure and sets all of its elements to 0. It is an example
-            of a `perfect loop nest`.
+            of a `perfect loop nest'.
         }
         \label{fig:2dloop}
 \end{figure}
@@ -152,12 +152,13 @@ arrows indicate the direction of iteration.
 \begin{figure}[h]
     \centering
     \includegraphics[scale=0.75]{iteration_space}
-    \caption{A representation of the iteration space for \ref{fig:2dloop}}
+    \caption{A representation of the iteration space for \ref{fig:2dloop} where arrows indicate the direction of iteration}
     \label{fig:iteration_space}
 \end{figure}
 
 A more complex two-dimensional loop nest might perform a computation at each iteration which requires a value from an earlier
-computation.
+computation thereby creating a dependence of on previous iterations. In \ref{fig:2dloop} the computation is trivial and there are no
+inter-iteration dependencies since the loop body makes no reference to array elements calculated in earlier iterations.
 
 \begin{figure}[h]
     \begin{lstlisting}[language=C]
@@ -173,24 +174,18 @@ computation.
     \caption{
         This is loop nest iterates over a two-dimensional structure and updates the value of all but the first elements in each dimension.
         The right hand of the assignment refers to two array indices which were calculated in previous iterations of the \texttt{i} and \texttt{j} loops
-        respectively. It is an example of a `perfect loop nest` as well as a `stencil loop`.
+        respectively. It is an example of a `perfect loop nest' as well as a `stencil loop'.
     }
     \label{fig:stencil}
 \end{figure}
 
-In this case, arrows between points indicate a dependence on the source point by the target point. Both of these iteration 
-spaces are the same shape and size as the two loop nests have the same limits and dimensions, but the
-dependencies created by the loop body in the second example mean that the two spaces cannot be manipulated in the same ways.
-
-Iteration spaces are used throughout this paper to explain the research and results obtained.
-
-\subsection*{Stencils}
+\subsection{Stencils}
 % http://dl.acm.org/citation.cfm?id=1413375
 A computation which iterates over a grid and performs nearest-neighbour computations is known as a stencil. These are
 particularly common when implementing code that deals with numerical methods and partial differential equations.
 Each point in the grid is updated some weighted contributions from a subset of its neighbours [stencilcite]. \ref{fig:stencil} is an example of a stencil.
 
-\subsection*{Data locality}
+\subsection{Data locality}
 Modern computer architectures have a hierarchy of data caches which store data under locality assumptions that memory locations close to each other
 are likely to be used within a short period of time (spatial locality) and that a memory location is likely to be reused (temporal locality). 
 When statements in a loop body access a memory location, it is loaded into the data cache hierarchy along with nearby memory locations to pre-empt probable future uses.
@@ -206,7 +201,7 @@ way a loop nest traverses its iteration space to try and exploit \textit{data lo
 manages the data used by the loop body. There are several common loop optimizations which transform a loop nest structure ie. through
 swapping the order of loop headers to exploit data locality, however the primary optimization studied in this project is \textit{loop tiling}.
 
-\subsection*{Loop tiling}
+\subsection{Loop tiling}
 \textit{Loop tiling}, also known as \textit{strip mine and interchange} or \textit{loop blocking}, is an optimization that modifies 
 a loop nest so that it iterates completely over `tiles' or `blocks' of the iteration space, rather than repeatedly iterating 
 completely through each dimension of the iteration space until all points are visited. Tiling transformations group points of
@@ -215,7 +210,7 @@ reducing the amount of time before nearby data accesses occur and improving data
 required in a full loop execution fit into the cache and prevent excessive eviction. In addition to improving data locality, loop tiling can also 
 create opportunities for parallelism not present in the original code.
 
-\subsection*{Polyhedral model}
+\subsection{Polyhedral model}
 % "A Practical Automatic Polyhedral Parallelizer and Locality Optimizer"
 The Polyhedral model is a powerful abstraction for reasoning about loop nests and loop transformations [cite] that builds on the
 geometric representation of loop iterations described in an iteration space. Each iteration of a statement is viewed as an
@@ -231,7 +226,7 @@ point found within a convex polyhedron in lexicographical order. It is also desi
 the back-end to code generation tools that perform automatic parallelism. Its output is pseudo-code loops which visit
 each integral point of a union of polyhedra in such a way as to minimize control overhead and produce efficient code.
 
-\subsection*{Motivation}
+\subsection{Motivation}
 The polyhedral model allows reasoning about and solving a wide range of problems related to program transformations,
 in particular where loop nests are involved. When performing these transformations, code generation is usually the last
 step after the abstract structure of the program has been analysed and mutated. There are often constraints on the size of the code
@@ -245,7 +240,7 @@ We considered CLooG as a candidate for the tiled code generation back-end for De
 other tools performing similar tasks as this project's goal. The ability to manually build an input file for a simple example of Devito's
 output provided an excellent starting point for understanding how both tools work and for obtaining initial results.
 
-\subsection*{Implementation}
+\subsection{Implementation}
 CLooG provides a command-line interface which makes use of specially formatted input files (primarily composed of matrices representing
 the sets of inequalities defining an iteration space) to understand the loop nest structure as well as a C library that has structures and
 functions that permit programmatic configuration and execution of the tool.
@@ -255,7 +250,7 @@ Statements in CLooG are represented abstractly by inequalities on the iterators 
 For example the loop body in \ref{fig:stencil} is described to CLooG by its domain, given by the inequalities
 \[i \ge 1 , i < 100 , j \ge 1, j < 100 \]
 
-\subsubsection*{Algorithm}
+\subsubsection{Algorithm}
 The algorithm employed by CLooG for visiting the integral points of the specified polyhedra is presented in in a simplified form.
 For each dimension in the iteration space described by the user input, proceeding from outermost to innermost loops;
 \begin{enumerate}
@@ -269,7 +264,7 @@ For each dimension in the iteration space described by the user input, proceedin
 \end{enumerate}
 At this stage CLooG has enough information to pretty-print the loops into code.
 
-\subsection*{Limitations}
+\subsection{Limitations}
 CLooG is a tool usually used as a back-end to a more specialised tool such as PLUTO or PrimeTile [citations] which
 apply polyhedral theory to transform a given loop nest to enhance parallelism or data locality and delegate CLooG to generate
 efficient code to scan the new polyhedron. CLooG itself however, is not automated in any way and must be driven with a problem
@@ -285,14 +280,14 @@ back-end, PLuTo applies analytical model-driven transformations in the polyhedra
 of regular programs containing loop nests. One of the primary features of PLuTo is its automatic exploration of the space
 of potential program transformations to identify and apply the most effective loop tiling.
 
-\subsection*{Motivation}
+\subsection{Motivation}
 Like CLooG, PLuTo is motivated by the powerful abstraction provided by the Polyhedral model when reasoning about and optimizing loop
 nests. However PLuTo is more specifically concerned with how loop tiling can improve parallelism and data locality, especially
 for applications run on massively parallel architectures like those frequently seen in scientific computing applications. The framework
 takes a step further yet by applying analytical methods to intelligently find optimal transformations and tilings with code dependencies in mind.
 The tool's design is indicative of its intended usage in optimizing existing code, possibly developed before a tool as capable as PLuTo was developed.
 
-\subsection*{Implementation}
+\subsection{Implementation}
 PLuTo operates as a source-to-source optimization tool, taking as input a sequence of nested loops in source-code format
 and producing a transformed sequences of loops in source code. The research and behind PLuTo is on automated transformations,
 not dependence analysis or source-code parsing, so it delegates the task of interpreting input and determining dependencies
@@ -306,7 +301,7 @@ algorithm. The framework iteratively augments and solves ILP problems to find mu
 these solutions, PLuTo is able to construct matrices representing the transformed domains and statement dependencies which can be
 given as input to CLooG for code generation.
 
-\subsection*{Limitations}
+\subsection{Limitations}
 PLuTo is a powerful tool that makes many informed analyses to drive its automated search for optimal transformations, and its integration
 with other polyhedral tools make it a well-documented practical tool for users looking to apply source-to-source loop transformations. It
 delivers a more specialised, automated solution than using CLooG alone, and allows with existing code to perform optimizations without having to 
@@ -354,17 +349,27 @@ The high-level architecture of Devito can be broken into four steps;
 
 \begin{figure}[h]
     \begin{lstlisting}[language=Python]
-        # Function symbols associated with user data
-        u = TimeData('u', shape=(nx, ny))
-        n = DenseData('m', shape=(nx, ny))
-        # Symbolic equation the creates finite-difference stencils
-        eqn = m * u.dt2 - u.laplace
-        # Devito operator that transforms stencils into array accesses
-        op = Operator(eqn)
-        # Generate low-level code applied to data with Propagator
-        u = op.apply(u.data, m.data)
+    from devito import TimeData, Operator
+    from sympy.abc import s, h
+    # Function symbol associated with user data
+    u = TimeData(name=’u’, shape=(nx, ny),
+                 time_order=1, space_order=2)
+    u.data[0, :] = ui[:]
+
+    # Symbolic equation
+    eqn = Eq(u.dt, a * (u.dx2 + u.dy2))
+    # Expand finite-difference stencils
+    stencil = solve(eqn, u.forward)[0]
+
+    # Devito operator that transforms stencils into array accesses
+    op = Operator(stencils=Eq(u.forward, stencil),
+                  subs={h: dx, s: dt}, nt=timesteps)
+
+    # Generate low-level code applied to data with Propagator
+    op.apply()
     \end{lstlisting}
-    \caption{ This simplified sequence of statements shows the basic Devito code-generation process from a user's perspective }
+    \caption{ Setup code for generating a Diffusion kernel in Devito}
+    \label{fig:diffusion_devito}
 \end{figure}
 
 One of the key benefits of using Devito is the automatic generation of abstract array accesses upon creation of the Operator object. This 
@@ -372,6 +377,50 @@ creates an intermediate representation (IR) of the stencil which is then optimiz
 in a process called 'propagation'. It is during this propagation stage that loops are generated, and so this is the point in the process where
 Devito will analyse the IR and delegate to CLooG to tile the structure being generated. The objects that make up the IR allow
 Devito to programmatically reason about the loop and dependence structure of the kernel which will form the primary input for CLooG's transformation.
+
+\begin{figure}[h]
+    \begin{lstlisting}[language=C]
+        extern ‘‘C’’ int Operator(float *u_vec)
+        {
+            float (*u)[1000][1000] = (float (*)[1000][1000]) u_vec;
+            {
+                int t0;
+                int t1;
+                #pragma omp parallel
+                for (int i3 = 0; i3<500; i3+=1)
+                {
+                    #pragma omp single
+                    {
+                        t0 = (i3)%(2);
+                        t1 = (t0 + 1)%(2);
+
+                    }
+                    {
+                        #pragma omp for schedule(static)
+                        for (int i1 = 1; i1<999; i1++)
+                        {
+                            #pragma omp simd aligned(u:64)
+                            for (int i2 = 1; i2<999; i2++)
+                            {
+                                u[t1][i1][i2] = 2.5e-1F*u[t0][i1][i2-1]
+                                              + 2.5e-1F*u[t0][i1][i2+1]
+                                              + 2.5e-1F*u[t0][i1-1][i2]
+                                              + 2.5e-1F*u[t0][i1+1][i2];
+
+                            }
+
+                        }
+
+                    }
+
+                }
+
+            }
+        }
+    \end{lstlisting}
+    \caption{Auto-generated C code to solve the diffusion example in \ref{fig:diffusion_devito}}
+    \label{fig:diffusion_C}
+\end{figure}
 
 Devito takes its form as a Python library that provides an API for users to create and manage objects that define and configure all of the components
 in the code generation pipeline. To make the most of the native Python environment and the practical benefits it brings, Devito does not define its 
@@ -488,7 +537,7 @@ as well as their implementation. The theory of how loop tiling can improve perfo
 data locality that non tiled code results in better program run time. There are other potential bottlenecks during program execution which could be the dominating
 restrictions on execution time for certain kernels, preventing the tiling transformations from having a noticeable improvement.
 
-\subsection*{Arithmetic Intensity}
+\subsection{Arithmetic Intensity}
 Arithmetic intensity is the ratio of FLOPS per byte of memory traffic and indicates how memory-bound or computationally-bound a given program is.
 This metric is often used in the context of the Roofline model which provides a visual model of the relationship between memory and computational bounds for a
 given system. 
@@ -503,7 +552,7 @@ we might expect loop tiling to have limited performance benefit since the comput
 the initial experiments particularly important as they should allow us to identify to what extent the tiling transformations will impact the different types of kernel
 Devito can generate.
 
-\subsection*{Architecture}
+\subsection{Architecture}
 The benefits realized by tiling loops to improve data locality are highly dependent on the architecture of the system upon which the code is executed. Tiling parameters
 effect the size and shape of the memory space that is accessed by a loop nest, and an optimal tiling transformation will configure the iteration space such that it both
 properly fits and makes the most use of the architecture's underlying memory hierarchy. When designing and testing tiling configurations care must be taken that
