@@ -51,10 +51,10 @@ int ForwardOperator(float *u_vec, float *damp_vec, float *m_vec, float *src_vec,
                                     #pragma GCC ivdep
                                     for (int i3=8*ii3+i4;i3<=min(i4+316,8*ii3+i4+7);i3++)
                                     {
-                                        float temp1 = 3.04F*damp[(i1-i4)][(i2-i4)][(i3-i4)];
-                                        float temp3 = 2*m[(i1-i4)][(i2-i4)][(i3-i4)];
+                                        float temp1 = 3.04F*damp[i1][i2][i3];
+                                        float temp3 = 2*m[i1][i2][i3];
                                         float temp6 = 2.50000000000000e-3F;
-                                        u[t2][(i1-i4)][(i2-i4)][(i3-i4)] = (1.84832e+1F*temp6*(u[t1][(i1-i4)][(i2-i4)][(i3-i4) - 1] + u[t1][(i1-i4)][(i2-i4)][(i3-i4) + 1] + u[t1][(i1-i4)][(i2-i4) - 1][(i3-i4)] + u[t1][(i1-i4)][(i2-i4) + 1][(i3-i4)] + u[t1][(i1-i4) - 1][(i2-i4)][(i3-i4)] + u[t1][(i1-i4) + 1][(i2-i4)][(i3-i4)]) - 1.108992e+2F*temp6*u[t1][(i1-i4)][(i2-i4)][(i3-i4)] + (temp1 - temp3)*u[t0][(i1-i4)][(i2-i4)][(i3-i4)] + 4*m[(i1-i4)][(i2-i4)][(i3-i4)]*u[t1][(i1-i4)][(i2-i4)][(i3-i4)])/(temp1 + temp3);
+                                        u[t2][i1][i2][i3] = (1.84832e+1F*temp6*(u[t1][i1][i2][i3 - 1] + u[t1][i1][i2][i3 + 1] + u[t1][i1][i2 - 1][i3] + u[t1][i1][i2 + 1][i3] + u[t1][i1 - 1][i2][i3] + u[t1][i1 + 1][i2][i3]) - 1.108992e+2F*temp6*u[t1][i1][i2][i3] + (temp1 - temp3)*u[t0][i1][i2][i3] + 4*m[i1][i2][i3]*u[t1][i1][i2][i3])/(temp1 + temp3);
                                     }
                                 }
                             }
