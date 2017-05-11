@@ -1,4 +1,4 @@
-/* Generated from acoustic_skew_tile.cloog by CLooG 0.18.4-b2b4f77 gmp bits in 0.01s. */
+/* Generated from acoustic_skew_tile.cloog by CLooG 0.18.4-b2b4f77 gmp bits in 0.02s. */
 /* DON'T FORGET TO USE -lm OPTION TO COMPILE. */
 
 /* Useful headers. */
@@ -29,13 +29,13 @@ int main() {
   int i, j, k, l, m, n, o;
   int total=0;
 
-  for (ii1=0;ii1<=39;ii1++) {
-    for (ii2=0;ii2<=39;ii2++) {
-      for (ii3=0;ii3<=39;ii3++) {
+  for (ii1=1;ii1<=13;ii1++) {
+    for (ii2=1;ii2<=13;ii2++) {
+      for (ii3=1;ii3<=13;ii3++) {
         for (i4=0;i4<=82;i4++) {
-          for (i1=8*ii1+i4;i1<=min(i4+316,8*ii1+i4+7);i1++) {
-            for (i2=8*ii2+i4;i2<=min(i4+316,8*ii2+i4+7);i2++) {
-              for (i3=8*ii3+i4;i3<=min(i4+316,8*ii3+i4+7);i3++) {
+          for (i1=2*ii1+i4;i1<=2*ii1+i4+1;i1++) {
+            for (i2=2*ii2+i4;i2<=2*ii2+i4+1;i2++) {
+              for (i3=2*ii3+i4;i3<=2*ii3+i4+1;i3++) {
                 S1(ii1,ii2,ii3,i4,(-i4+i1),(-i4+i2),(-i4+i3));
               }
             }

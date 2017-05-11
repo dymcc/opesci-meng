@@ -28,15 +28,15 @@ int main() {
   int ii1, ii2, ii3, i4, i1, i2, i3;
   /* Original iterators. */
   int i, j, k, l, m, n, o;
-  int a[100][80][80];
+  int a[200][80][80];
   memset(a, 0, sizeof a);
   int total=0;
 
   for (ii1=0;ii1<=9;ii1++) {
       for (ii2=0;ii2<=9;ii2++) {
-          for (i4=0;i4<=82;i4++) {
-              for (i1=8*ii1+i4;i1<=min(i4+75,8*ii1+i4+7);i1++) {
-                  for (i2=8*ii2+i4;i2<=min(i4+75,8*ii2+i4+7);i2++) {
+          for (i4=0;i4<=192;i4++) {
+              for (i1=1*ii1+i4;i1<=min(i4+75,8*ii1+i4+7);i1++) {
+                  for (i2=1*ii2+i4;i2<=min(i4+75,8*ii2+i4+7);i2++) {
                       /*S1(ii1,ii2,i4,(-i4+i1),(-i4+i2));*/
                       a[i4+2][i1-i4][i2-i4] = a[i4+1][i1-i4][i2-i4] + a[i4+1][i1-i4][i2-i4] + a[i4+1][i1-i4][i2-i4 - 1] + a[i4+1][i1-i4][i2-i4 + 1] + a[i4+1][i1-i4 - 1][i2-i4] + a[i4+1][i1-i4 + 1][i2-i4] - a[i4+1][i1-i4][i2-i4] + a[i4][i1-i4][i2-i4] + a[i4+1][i1-i4][i2-i4];
                   }
