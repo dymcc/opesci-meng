@@ -1,0 +1,78 @@
+# This CLooG input file, skews and tiles the 
+# space loops in the loop nest below
+# with tile dimensions T1 x T2 x T3
+# and skewing factors S1, S2 and S3
+# respectively for X, Y and Z loops
+#
+# for(t = LB; t <= UB; t++){
+#   for(x = LB1; x <= LB1; x++){
+#     for(y = LB2; y <= LB2; x++){
+#       for(z = LB3; z <= LB3; x++){
+#         //STENCIL
+#       }
+#     }
+#   }
+# }
+
+
+# language: C
+c
+
+# Parameters & their constraints
+0 2
+0
+
+# Number of statements
+1
+# Domain for Statement 1
+14 9
+# xx yy zz t1  x  y  z  1 (Columns)
+# 0 <= t1 <= UB
+1  0  0  0  1  0  0  0 LB
+1  0  0  0 -1  0  0  0 UB
+# T1*xx <= x <= T1*xx + T1 - 1 |LB1 <= t2 <= UB1
+1 -T1 0  0  0  1  0  0  0
+1  T1 0  0  0 -1  0  0 T1-1
+1  0  0  0  0  1  0  0 LB1
+1  0  0  0  0 -1  0  0 UB1
+# T2*yy <= y <= T2*yy + T2 - 1 |LB2 <= y <= UB2
+1  0 -T2 0  0  0  1  0  0
+1  0  T2 0  0  0 -1  0 T2-1
+1  0  0  0  0  0  1  0 LB2
+1  0  0  0  0  0 -1  0 UB2
+# T3*zz <= z <= T3*zz + T3 - 1 |LB3 <= z <= UB3
+1  0  0 -T3 0  0  0  1  0
+1  0  0  T3 0  0  0 -1 T3-1
+1  0  0  0  0  0  0  1 LB3
+1  0  0  0  0  0  0 -1 UB3
+0 0 0
+
+# we do not want cloog to set the iterator names
+0
+
+# Number of scattering functions
+1
+7 16
+# c1 c2 c3 c4 c5 c6 c7 s2 s3 s4 t1  t2 t3 t4  1
+0  1  0  0  0  0  0  0 -1  0  0  0   0  0  0  0
+0  0  1  0  0  0  0  0  0 -1  0  0   0  0  0  0
+0  0  0  1  0  0  0  0  0  0 -1  0   0  0  0  0
+0  0  0  0  1  0  0  0  0  0  0 -1   0  0  0  0
+0  0  0  0  0  1  0  0  0  0  0 -S1 -1  0  0  0
+0  0  0  0  0  0  1  0  0  0  0 -S2  0 -1  0  0
+0  0  0  0  0  0  0  1  0  0  0 -S3  0  0 -1  0
+
+7
+xx yy zz t x y z
+
+
+
+
+
+
+
+
+
+
+
+
