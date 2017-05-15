@@ -28,21 +28,22 @@
 
 int main() {
   /* Scattering iterators. */
-  int i4, xx, yy, zz, i1, i2, i3;
+  int t, xx, yy, zz, x, y, z;
   /* Original iterators. */
   int i, j, k, l, m, n, o;
   /* Parameters. */
   int M=PARVAL1, N=PARVAL2, O=PARVAL3, P=PARVAL4;
   int total=0;
 
-  for (i4=0;i4<=82;i4++) {
-    for (xx=1;xx<=13;xx++) {
-      for (yy=1;yy<=13;yy++) {
-        for (zz=1;zz<=13;zz++) {
-          for (i1=i4+2*xx;i1<=i4+2*xx+1;i1++) {
-            for (i2=i4+2*yy;i2<=i4+2*yy+1;i2++) {
-              for (i3=i4+2*zz;i3<=i4+2*zz+1;i3++) {
-                S1(i4,xx,yy,zz,(-i4+i1),(-i4+i2),(-i4+i3));
+  int t, xx, yy, zz, x, y, z;
+  for (t=0;t<=82;t++) {
+    for (xx=0;xx<=5;xx++) {
+      for (yy=0;yy<=5;yy++) {
+        for (zz=0;zz<=5;zz++) {
+          for (x=max(4*t+4,4*t+8*xx);x<=4*t+8*xx+7;x++) {
+            for (y=max(4*t+4,4*t+8*yy);y<=4*t+8*yy+7;y++) {
+              for (z=max(4*t+4,4*t+8*zz);z<=4*t+8*zz+7;z++) {
+                S1(t,xx,yy,zz,(-4*t+x),(-4*t+y),(-4*t+z));
               }
             }
           }

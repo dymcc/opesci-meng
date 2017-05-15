@@ -1,90 +1,114 @@
-#include "assert.h"
+#define _POSIX_C_SOURCE 200809L
 #include "stdlib.h"
 #include "math.h"
-#include "stdio.h"
-#include "string.h"
 #include "sys/time.h"
 #include "xmmintrin.h"
 #include "pmmintrin.h"
+
+#define floord(n,d) (((n)<0) ? -((-(n)+(d)-1)/(d)) : (n)/(d))
+#define ceild(n,d)  (((n)<0) ? -((-(n))/(d)) : ((n)+(d)-1)/(d))
+#define max(x,y)    ((x) > (y) ? (x) : (y))
+#define min(x,y)    ((x) < (y) ? (x) : (y))
+
 struct profiler
 {
-    double post_stencils0;
-    double post_stencils1;
-    double main;
+  double loop_x_0;
+  double loop_p_src_1;
+  double loop_p_rec_2;
 } ;
-int Operator(float *u_vec, float *damp_vec, float *m_vec, float *src_vec, float *src_coords_vec, float *rec_vec, float *rec_coords_vec, struct profiler *timings)
+
+void f_1_0(float *restrict damp_vec, const int x_size, const int x, const int y_size, const int y, const int z_size, const int zz, float *restrict m_vec, float *restrict u_vec, const int time_size, const int time)
 {
-    float (*u)[30][30][30] = (float (*)[30][30][30]) u_vec;
-    float (*damp)[30][30] = (float (*)[30][30]) damp_vec;
-    float (*m)[30][30] = (float (*)[30][30]) m_vec;
-    float (*src)[1] = (float (*)[1]) src_vec;
-    float (*src_coords)[3] = (float (*)[3]) src_coords_vec;
-    float (*rec)[101] = (float (*)[101]) rec_vec;
-    float (*rec_coords)[3] = (float (*)[3]) rec_coords_vec;
-    {
-        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-    }
-    {
-        int i4, xx, yy, zz, i1, i2, i3;
-        for (i4=0;i4<=82;i4++) 
-        {
-            struct timeval start_main, end_main;
-            gettimeofday(&start_main, NULL);
-            for (xx=1;xx<=13;xx++)
-            {
-                for (yy=1;yy<=13;yy++)
-                {
-                    for (zz=1;zz<=13;zz++)
-                    {
-                        for (i1=i4+2*xx;i1<=i4+2*xx+1;i1++)
-                        {
-                            for (i2=i4+2*yy;i2<=i4+2*yy+1;i2++)
-                            {
-                                #pragma GCC ivdep
-                                for (i3=i4+2*zz;i3<=i4+2*zz+1;i3++)
-                                {
-                                    u[i4][i1-i4][i2-i4][i3-i4] = ((3.04F*damp[i1-i4][i2-i4][i3-i4] - 2*m[i1-i4][i2-i4][i3-i4])*u[i4 - 2][i1-i4][i2-i4][i3-i4] + 4.6208e-2F*(u[i4 - 1][i1-i4][i2-i4][i3-i4 - 1] + u[i4 - 1][i1-i4][i2-i4][i3-i4 + 1] + u[i4 - 1][i1-i4][i2-i4 - 1][i3-i4] + u[i4 - 1][i1-i4][i2-i4 + 1][i3-i4] + u[i4 - 1][i1-i4 - 1][i2-i4][i3-i4] + u[i4 - 1][i1-i4 + 1][i2-i4][i3-i4]) + 4*m[i1-i4][i2-i4][i3-i4]*u[i4 - 1][i1-i4][i2-i4][i3-i4] - 2.77248e-1F*u[i4 - 1][i1-i4][i2-i4][i3-i4])/(3.04F*damp[i1-i4][i2-i4][i3-i4] + 2*m[i1-i4][i2-i4][i3-i4]);
-                                }
-                            }
-                        }
-                    }
-                }
+  float (*restrict damp)[y_size][z_size] __attribute__((aligned(64))) = (float (*)[y_size][z_size]) damp_vec;
+  float (*restrict m)[y_size][z_size] __attribute__((aligned(64))) = (float (*)[y_size][z_size]) m_vec;
+  float (*restrict u)[x_size][y_size][z_size] __attribute__((aligned(64))) = (float (*)[x_size][y_size][z_size]) u_vec;
+  #pragma omp simd
+  for (int z=max(4*time+4,4*time+8*zz);z<=4*time+8*zz+7;z++) {
+    u[time + 1][x][y][z-4*time] = ((3.04F*damp[x][y][z-4*time] - 2*m[x][y][z-4*time])*u[time - 1][x][y][z-4*time] - 8.25142857142857e-5F*(u[time][x][y][z-4*time - 4] + u[time][x][y][z-4*time + 4] + u[time][x][y - 4][z-4*time] + u[time][x][y + 4][z-4*time] + u[time][x - 4][y][z-4*time] + u[time][x + 4][y][z-4*time]) + 1.17353650793651e-3F*(u[time][x][y][z-4*time - 3] + u[time][x][y][z-4*time + 3] + u[time][x][y - 3][z-4*time] + u[time][x][y + 3][z-4*time] + u[time][x - 3][y][z-4*time] + u[time][x + 3][y][z-4*time]) - 9.2416e-3F*(u[time][x][y][z-4*time - 2] + u[time][x][y][z-4*time + 2] + u[time][x][y - 2][z-4*time] + u[time][x][y + 2][z-4*time] + u[time][x - 2][y][z-4*time] + u[time][x + 2][y][z-4*time]) + 7.39328e-2F*(u[time][x][y][z-4*time - 1] + u[time][x][y][z-4*time + 1] + u[time][x][y - 1][z-4*time] + u[time][x][y + 1][z-4*time] + u[time][x - 1][y][z-4*time] + u[time][x + 1][y][z-4*time]) + 4*m[x][y][z-4*time]*u[time][x][y][z-4*time] - 3.94693333333333e-1F*u[time][x][y][z-4*time])/(3.04F*damp[x][y][z-4*time] + 2*m[x][y][z-4*time]);
+  }
+}
+void f_1_1(float *restrict m_vec, const int x_size, const int y_size, const int z_size, float *restrict src_vec, const int time_size, const int time, float *restrict src_coords_vec, const int d_size, float *restrict u_vec)
+{
+  float (*restrict m)[y_size][z_size] __attribute__((aligned(64))) = (float (*)[y_size][z_size]) m_vec;
+  float (*restrict src)[1] __attribute__((aligned(64))) = (float (*)[1]) src_vec;
+  float (*restrict src_coords)[d_size] __attribute__((aligned(64))) = (float (*)[d_size]) src_coords_vec;
+  float (*restrict u)[x_size][y_size][z_size] __attribute__((aligned(64))) = (float (*)[x_size][y_size][z_size]) u_vec;
+  for (int p_src = 0; p_src < 1; p_src += 1)
+  {
+    int temp11 = (int)(floor(5.0e-2F*src_coords[p_src][1]));
+    int temp14 = (int)(floor(5.0e-2F*src_coords[p_src][2]));
+    int temp8 = (int)(floor(5.0e-2F*src_coords[p_src][0]));
+    float temp18 = (float)(-2.0e+1F*temp8 + src_coords[p_src][0]);
+    float temp19 = (float)(-2.0e+1F*temp11 + src_coords[p_src][1]);
+    float temp20 = (float)(-2.0e+1F*temp14 + src_coords[p_src][2]);
+    u[time + 1][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 10] = 9.2416F*(-1.25e-4F*temp18*temp19*temp20 - 5.0e-2F*(temp18 + temp19 + temp20) + 2.5e-3F*(temp18*temp19 + temp18*temp20 + temp19*temp20) + 1)*src[time][p_src]/m[temp8 + 10][temp11 + 10][temp14 + 10] + u[time + 1][temp8 + 10][temp11 + 10][temp14 + 10];
+    u[time + 1][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 10] = 9.2416F*(1.25e-4F*temp18*temp19*temp20 + 5.0e-2F*temp19 - 2.5e-3F*(temp18*temp19 + temp19*temp20))*src[time][p_src]/m[temp8 + 10][temp11 + 11][temp14 + 10] + u[time + 1][temp8 + 10][temp11 + 11][temp14 + 10];
+    u[time + 1][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 10] = 9.2416F*(1.25e-4F*temp18*temp19*temp20 + 5.0e-2F*temp18 - 2.5e-3F*(temp18*temp19 + temp18*temp20))*src[time][p_src]/m[temp8 + 11][temp11 + 10][temp14 + 10] + u[time + 1][temp8 + 11][temp11 + 10][temp14 + 10];
+    u[time + 1][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 11] = 9.2416F*(1.25e-4F*temp18*temp19*temp20 + 5.0e-2F*temp20 - 2.5e-3F*(temp18*temp20 + temp19*temp20))*src[time][p_src]/m[temp8 + 10][temp11 + 10][temp14 + 11] + u[time + 1][temp8 + 10][temp11 + 10][temp14 + 11];
+    u[time + 1][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 10] = 9.2416F*(-1.25e-4F*temp18*temp19*temp20 + 2.5e-3F*temp18*temp19)*src[time][p_src]/m[temp8 + 11][temp11 + 11][temp14 + 10] + u[time + 1][temp8 + 11][temp11 + 11][temp14 + 10];
+    u[time + 1][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 11] = 9.2416F*(-1.25e-4F*temp18*temp19*temp20 + 2.5e-3F*temp19*temp20)*src[time][p_src]/m[temp8 + 10][temp11 + 11][temp14 + 11] + u[time + 1][temp8 + 10][temp11 + 11][temp14 + 11];
+    u[time + 1][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 11] = 9.2416F*(-1.25e-4F*temp18*temp19*temp20 + 2.5e-3F*temp18*temp20)*src[time][p_src]/m[temp8 + 11][temp11 + 10][temp14 + 11] + u[time + 1][temp8 + 11][temp11 + 10][temp14 + 11];
+    u[time + 1][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 11] = 1.1552e-3F*temp18*temp19*temp20*src[time][p_src]/m[temp8 + 11][temp11 + 11][temp14 + 11] + u[time + 1][temp8 + 11][temp11 + 11][temp14 + 11];
+  }
+}
+void f_1_2(float *restrict rec_vec, const int time_size, const int time, float *restrict rec_coords_vec, const int d_size, float *restrict u_vec, const int x_size, const int y_size, const int z_size)
+{
+  float (*restrict rec)[101] __attribute__((aligned(64))) = (float (*)[101]) rec_vec;
+  float (*restrict rec_coords)[d_size] __attribute__((aligned(64))) = (float (*)[d_size]) rec_coords_vec;
+  float (*restrict u)[x_size][y_size][z_size] __attribute__((aligned(64))) = (float (*)[x_size][y_size][z_size]) u_vec;
+  for (int p_rec = 0; p_rec < 101; p_rec += 1)
+  {
+    int temp41 = (int)(floor(5.0e-2F*rec_coords[p_rec][0]));
+    int temp44 = (int)(floor(5.0e-2F*rec_coords[p_rec][1]));
+    int temp47 = (int)(floor(5.0e-2F*rec_coords[p_rec][2]));
+    float temp42 = (float)(-2.0e+1F*temp41 + rec_coords[p_rec][0]);
+    float temp45 = (float)(-2.0e+1F*temp44 + rec_coords[p_rec][1]);
+    float temp48 = (float)(-2.0e+1F*temp47 + rec_coords[p_rec][2]);
+    rec[time][p_rec] = 1.25e-4F*temp42*temp45*temp48*u[time][temp41 + 11][temp44 + 11][temp47 + 11] + (-1.25e-4F*temp42*temp45*temp48 + 2.5e-3F*temp42*temp45)*u[time][temp41 + 11][temp44 + 11][temp47 + 10] + (-1.25e-4F*temp42*temp45*temp48 + 2.5e-3F*temp42*temp48)*u[time][temp41 + 11][temp44 + 10][temp47 + 11] + (-1.25e-4F*temp42*temp45*temp48 + 2.5e-3F*temp45*temp48)*u[time][temp41 + 10][temp44 + 11][temp47 + 11] + (1.25e-4F*temp42*temp45*temp48 + 5.0e-2F*temp42 - 2.5e-3F*(temp42*temp45 + temp42*temp48))*u[time][temp41 + 11][temp44 + 10][temp47 + 10] + (1.25e-4F*temp42*temp45*temp48 + 5.0e-2F*temp45 - 2.5e-3F*(temp42*temp45 + temp45*temp48))*u[time][temp41 + 10][temp44 + 11][temp47 + 10] + (1.25e-4F*temp42*temp45*temp48 + 5.0e-2F*temp48 - 2.5e-3F*(temp42*temp48 + temp45*temp48))*u[time][temp41 + 10][temp44 + 10][temp47 + 11] + (-1.25e-4F*temp42*temp45*temp48 - 5.0e-2F*(temp42 + temp45 + temp48) + 2.5e-3F*(temp42*temp45 + temp42*temp48 + temp45*temp48) + 1)*u[time][temp41 + 10][temp44 + 10][temp47 + 10];
+  }
+}
+
+int Forward(float *restrict damp_vec, float *restrict m_vec, float *restrict rec_vec, float *restrict rec_coords_vec, float *restrict src_vec, float *restrict src_coords_vec, float *restrict u_vec, const int d_size, const int time_size, const int x_size, const int y_size, const int z_size, struct profiler *timings)
+{
+  float (*restrict damp)[y_size][z_size] __attribute__((aligned(64))) = (float (*)[y_size][z_size]) damp_vec;
+  float (*restrict m)[y_size][z_size] __attribute__((aligned(64))) = (float (*)[y_size][z_size]) m_vec;
+  float (*restrict rec)[101] __attribute__((aligned(64))) = (float (*)[101]) rec_vec;
+  float (*restrict rec_coords)[d_size] __attribute__((aligned(64))) = (float (*)[d_size]) rec_coords_vec;
+  float (*restrict src)[1] __attribute__((aligned(64))) = (float (*)[1]) src_vec;
+  float (*restrict src_coords)[d_size] __attribute__((aligned(64))) = (float (*)[d_size]) src_coords_vec;
+  float (*restrict u)[x_size][y_size][z_size] __attribute__((aligned(64))) = (float (*)[x_size][y_size][z_size]) u_vec;
+  /* Flush denormal numbers to zero in hardware */
+  _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+  _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+  int time, xx, yy, zz, x, y, z;
+  for (time=1;time<=81;time++) {
+    struct timeval start_loop_x_0, end_loop_x_0;
+    gettimeofday(&start_loop_x_0, NULL);
+    for (xx=0;xx<=5;xx++) {
+      for (yy=0;yy<=5;yy++) {
+        for (zz=0;zz<=5;zz++) {
+          for (x=max(4*time+4,4*time+8*xx);x<=4*time+8*xx+7;x++) {
+            for (y=max(4*time+4,4*time+8*yy);y<=4*time+8*yy+7;y++) {
+              f_1_0(damp_vec,x_size,x-4*time,y_size,y-4*time,z_size,zz,m_vec,u_vec,time_size,time);
             }
-            {
-                gettimeofday(&end_main, NULL);
-                timings->main += (double)(end_main.tv_sec-start_main.tv_sec)+(double)(end_main.tv_usec-start_main.tv_usec)/1000000;
-            }
-            {
-                struct timeval start_post_stencils0, end_post_stencils0;
-                gettimeofday(&start_post_stencils0, NULL);
-                for (int p_src = 0; p_src < 1; p_src += 1)
-                {
-                    u[i4][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 10] = 9.2416F*(-1.25e-4F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]) + 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1]) + 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]) - 5.0e-2F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0]) + 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]) - 5.0e-2F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1]) - 5.0e-2F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]) + 1)*src[i4][p_src]/m[(int)(floor(5.0e-2F*src_coords[p_src][0])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 10] + u[i4][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 10];
-                    u[i4][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 10] = 9.2416F*(1.25e-4F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]) - 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1]) - 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]) + 5.0e-2F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1]))*src[i4][p_src]/m[(int)(floor(5.0e-2F*src_coords[p_src][0])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 10] + u[i4][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 10];
-                    u[i4][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 10] = 9.2416F*(1.25e-4F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]) - 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1]) - 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]) + 5.0e-2F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0]))*src[i4][p_src]/m[(int)(floor(5.0e-2F*src_coords[p_src][0])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 10] + u[i4][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 10];
-                    u[i4][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 11] = 9.2416F*(1.25e-4F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]) - 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]) - 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]) + 5.0e-2F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]))*src[i4][p_src]/m[(int)(floor(5.0e-2F*src_coords[p_src][0])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 11] + u[i4][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 11];
-                    u[i4][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 10] = 9.2416F*(-1.25e-4F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]) + 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1]))*src[i4][p_src]/m[(int)(floor(5.0e-2F*src_coords[p_src][0])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 10] + u[i4][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 10];
-                    u[i4][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 11] = 9.2416F*(-1.25e-4F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]) + 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]))*src[i4][p_src]/m[(int)(floor(5.0e-2F*src_coords[p_src][0])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 11] + u[i4][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 11];
-                    u[i4][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 11] = 9.2416F*(-1.25e-4F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]) + 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2]))*src[i4][p_src]/m[(int)(floor(5.0e-2F*src_coords[p_src][0])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 11] + u[i4][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 10][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 11];
-                    u[i4][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 11] = 1.1552e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][0])) + src_coords[p_src][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][1])) + src_coords[p_src][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*src_coords[p_src][2])) + src_coords[p_src][2])*src[i4][p_src]/m[(int)(floor(5.0e-2F*src_coords[p_src][0])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 11] + u[i4][(int)(floor(5.0e-2F*src_coords[p_src][0])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][1])) + 11][(int)(floor(5.0e-2F*src_coords[p_src][2])) + 11];
-                }
-                {
-                    gettimeofday(&end_post_stencils0, NULL);
-                    timings->post_stencils0 += (double)(end_post_stencils0.tv_sec-start_post_stencils0.tv_sec)+(double)(end_post_stencils0.tv_usec-start_post_stencils0.tv_usec)/1000000;
-                }
-                struct timeval start_post_stencils1, end_post_stencils1;
-                gettimeofday(&start_post_stencils1, NULL);
-                for (int p_rec = 0; p_rec < 101; p_rec += 1)
-                {
-                    rec[i4][p_rec] = (-1.25e-4F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]) + 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1]))*u[i4][(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + 11][(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + 11][(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + 10] + (-1.25e-4F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]) + 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]))*u[i4][(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + 11][(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + 10][(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + 11] + (-1.25e-4F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]) + 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]))*u[i4][(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + 10][(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + 11][(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + 11] + (1.25e-4F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]) - 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1]) - 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]) + 5.0e-2F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0]))*u[i4][(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + 11][(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + 10][(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + 10] + (1.25e-4F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]) - 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1]) - 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]) + 5.0e-2F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1]))*u[i4][(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + 10][(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + 11][(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + 10] + (1.25e-4F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]) - 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]) - 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]) + 5.0e-2F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]))*u[i4][(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + 10][(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + 10][(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + 11] + (-1.25e-4F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]) + 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1]) + 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]) - 5.0e-2F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0]) + 2.5e-3F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]) - 5.0e-2F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1]) - 5.0e-2F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2]) + 1)*u[i4][(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + 10][(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + 10][(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + 10] + 1.25e-4F*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + rec_coords[p_rec][0])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + rec_coords[p_rec][1])*(float)(-2.0e+1F*(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + rec_coords[p_rec][2])*u[i4][(int)(floor(5.0e-2F*rec_coords[p_rec][0])) + 11][(int)(floor(5.0e-2F*rec_coords[p_rec][1])) + 11][(int)(floor(5.0e-2F*rec_coords[p_rec][2])) + 11];
-                }
-                {
-                    gettimeofday(&end_post_stencils1, NULL);
-                    timings->post_stencils1 += (double)(end_post_stencils1.tv_sec-start_post_stencils1.tv_sec)+(double)(end_post_stencils1.tv_usec-start_post_stencils1.tv_usec)/1000000;
-                }
-            }
+          }
         }
+      }
     }
-    return 0;
+      gettimeofday(&end_loop_x_0, NULL);
+      timings->loop_x_0 += (double)(end_loop_x_0.tv_sec-start_loop_x_0.tv_sec)+(double)(end_loop_x_0.tv_usec-start_loop_x_0.tv_usec)/1000000;
+      struct timeval start_loop_p_src_1, end_loop_p_src_1;
+      gettimeofday(&start_loop_p_src_1, NULL);
+      /* noinline? */
+      f_1_1(m_vec,x_size,y_size,z_size,src_vec,time_size,time,src_coords_vec,d_size,u_vec);
+      gettimeofday(&end_loop_p_src_1, NULL);
+      timings->loop_p_src_1 += (double)(end_loop_p_src_1.tv_sec-start_loop_p_src_1.tv_sec)+(double)(end_loop_p_src_1.tv_usec-start_loop_p_src_1.tv_usec)/1000000;
+      struct timeval start_loop_p_rec_2, end_loop_p_rec_2;
+      gettimeofday(&start_loop_p_rec_2, NULL);
+      /* noinline? */
+      f_1_2(rec_vec,time_size,time,rec_coords_vec,d_size,u_vec,x_size,y_size,z_size);
+      gettimeofday(&end_loop_p_rec_2, NULL);
+      timings->loop_p_rec_2 += (double)(end_loop_p_rec_2.tv_sec-start_loop_p_rec_2.tv_sec)+(double)(end_loop_p_rec_2.tv_usec-start_loop_p_rec_2.tv_usec)/1000000;
+    }
+  return 0;
 }
