@@ -1,0 +1,4 @@
+Applying Forward
+DSE: (_cse)  --> (_optimize_trigonometry)  --> (_replace_time_invariants)  --> (_factorize)  [0.27 s]
+DLE: (_avoid_denormals) --> (_create_elemental_functions) --> (_simdize) --> (_ompize) [0.08 s]
+custom

@@ -1,0 +1,20 @@
+Applying Forward
+DSE: (_cse)  --> (_optimize_trigonometry)  --> (_replace_time_invariants)  --> (_factorize)  [0.28 s]
+DLE: (_avoid_denormals) --> (_create_elemental_functions) --> (_simdize) --> (_ompize) [0.08 s]
+custom
+Traceback (most recent call last):
+  File "benchmark.py", line 127, in <module>
+    gflopss, oi, timings, [customrec, customdata] = run(**parameters)
+  File "/home/dylan/masters/devito/examples/acoustic/acoustic_example.py", line 87, in run
+    auto_tuning=auto_tuning, compiler=compiler, custom=custom
+  File "/home/dylan/masters/devito/examples/acoustic/Acoustic_codegen.py", line 70, in Forward
+    summary = fw.apply(autotune=auto_tuning)
+  File "/home/dylan/masters/devito/devito/operator.py", line 451, in apply
+    self.cfunction(*list(arguments.values()))
+  File "/home/dylan/masters/devito/devito/operator.py", line 266, in cfunction
+    basename = self.compile
+  File "/home/dylan/masters/devito/devito/operator.py", line 256, in compile
+    return jit_compile(self.ccode, self.compiler)
+  File "/home/dylan/masters/devito/devito/operator.py", line 234, in ccode
+    f = open("/tmp/devito-1000/acoustic_tiled_outer.c")
+IOError: [Errno 2] No such file or directory: '/tmp/devito-1000/acoustic_tiled_outer.c'

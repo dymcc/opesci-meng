@@ -5,16 +5,6 @@
 #include "xmmintrin.h"
 #include "pmmintrin.h"
 
-#define floord(n,d) (((n)<0) ? -((-(n)+(d)-1)/(d)) : (n)/(d))
-#define ceild(n,d)  (((n)<0) ? -((-(n))/(d)) : ((n)+(d)-1)/(d))
-#define max(x,y)    ((x) > (y) ? (x) : (y))
-#define min(x,y)    ((x) < (y) ? (x) : (y))
-
-#define X_TILE_SIZE 16
-#define Y_TILE_SIZE 16
-#define Z_TILE_SIZE 16
-#define SKEW 4*time
-
 struct profiler
 {
   double loop_x_0;
@@ -22,14 +12,16 @@ struct profiler
   double loop_p_rec_2;
 } ;
 
-void f_1_0(float *restrict damp_vec, const int x_size, const int x, const int y_size, const int y, const int z_size, const int zz, float *restrict m_vec, float *restrict u_vec, const int time_size, const int time)
+void f_1_0(float *restrict damp_vec, const int x_size, const int x, const int y_size, const int y, const int z_size, float *restrict m_vec, float *restrict u_vec, const int time_size, const int time)
 {
   float (*restrict damp)[y_size][z_size] __attribute__((aligned(64))) = (float (*)[y_size][z_size]) damp_vec;
   float (*restrict m)[y_size][z_size] __attribute__((aligned(64))) = (float (*)[y_size][z_size]) m_vec;
   float (*restrict u)[x_size][y_size][z_size] __attribute__((aligned(64))) = (float (*)[x_size][y_size][z_size]) u_vec;
+  #pragma ivdep
   #pragma omp simd
-  for (int z=max(4*time+4,4*time+8*zz);z<=min(z_size-5+4*time, 4*time+8*zz+7);z++) {
-    u[time + 1][x][y][z-4*time] = ((3.04F*damp[x][y][z-4*time] - 2*m[x][y][z-4*time])*u[time - 1][x][y][z-4*time] - 8.25142857142857e-5F*(u[time][x][y][z-4*time - 4] + u[time][x][y][z-4*time + 4] + u[time][x][y - 4][z-4*time] + u[time][x][y + 4][z-4*time] + u[time][x - 4][y][z-4*time] + u[time][x + 4][y][z-4*time]) + 1.17353650793651e-3F*(u[time][x][y][z-4*time - 3] + u[time][x][y][z-4*time + 3] + u[time][x][y - 3][z-4*time] + u[time][x][y + 3][z-4*time] + u[time][x - 3][y][z-4*time] + u[time][x + 3][y][z-4*time]) - 9.2416e-3F*(u[time][x][y][z-4*time - 2] + u[time][x][y][z-4*time + 2] + u[time][x][y - 2][z-4*time] + u[time][x][y + 2][z-4*time] + u[time][x - 2][y][z-4*time] + u[time][x + 2][y][z-4*time]) + 7.39328e-2F*(u[time][x][y][z-4*time - 1] + u[time][x][y][z-4*time + 1] + u[time][x][y - 1][z-4*time] + u[time][x][y + 1][z-4*time] + u[time][x - 1][y][z-4*time] + u[time][x + 1][y][z-4*time]) + 4*m[x][y][z-4*time]*u[time][x][y][z-4*time] - 3.94693333333333e-1F*u[time][x][y][z-4*time])/(3.04F*damp[x][y][z-4*time] + 2*m[x][y][z-4*time]);
+  for (int z = 4; z < z_size - 4; z += 1)
+  {
+    u[time + 1][x][y][z] = ((3.04F*damp[x][y][z] - 2*m[x][y][z])*u[time - 1][x][y][z] - 8.25142857142857e-5F*(u[time][x][y][z - 4] + u[time][x][y][z + 4] + u[time][x][y - 4][z] + u[time][x][y + 4][z] + u[time][x - 4][y][z] + u[time][x + 4][y][z]) + 1.17353650793651e-3F*(u[time][x][y][z - 3] + u[time][x][y][z + 3] + u[time][x][y - 3][z] + u[time][x][y + 3][z] + u[time][x - 3][y][z] + u[time][x + 3][y][z]) - 9.2416e-3F*(u[time][x][y][z - 2] + u[time][x][y][z + 2] + u[time][x][y - 2][z] + u[time][x][y + 2][z] + u[time][x - 2][y][z] + u[time][x + 2][y][z]) + 7.39328e-2F*(u[time][x][y][z - 1] + u[time][x][y][z + 1] + u[time][x][y - 1][z] + u[time][x][y + 1][z] + u[time][x - 1][y][z] + u[time][x + 1][y][z]) + 4*m[x][y][z]*u[time][x][y][z] - 3.94693333333333e-1F*u[time][x][y][z])/(3.04F*damp[x][y][z] + 2*m[x][y][z]);
   }
 }
 void f_1_1(float *restrict m_vec, const int x_size, const int y_size, const int z_size, float *restrict src_vec, const int time_size, const int time, float *restrict src_coords_vec, const int d_size, float *restrict u_vec)
@@ -82,38 +74,40 @@ int Forward(float *restrict damp_vec, float *restrict m_vec, float *restrict rec
   float (*restrict src)[1] __attribute__((aligned(64))) = (float (*)[1]) src_vec;
   float (*restrict src_coords)[d_size] __attribute__((aligned(64))) = (float (*)[d_size]) src_coords_vec;
   float (*restrict u)[x_size][y_size][z_size] __attribute__((aligned(64))) = (float (*)[x_size][y_size][z_size]) u_vec;
-  /* Flush denormal numbers to zero in hardware */
-  _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-  _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-  int time, xx, yy, zz, x, y, z;
-  for (time=1;time<=81;time++) {
+  /* DLE: moved denormals flag */
+  for (int time = 1; time < time_size - 1; time += 1)
+  {
     struct timeval start_loop_x_0, end_loop_x_0;
     gettimeofday(&start_loop_x_0, NULL);
-    for (xx=0;xx<=5;xx++) {
-      for (yy=0;yy<=5;yy++) {
-        for (zz=0;zz<=5;zz++) {
-          for (x=max(4*time+4,4*time+8*xx);x<=min(x_size-5+4*time, 4*time+8*xx+7);x++) {
-            for (y=max(4*time+4,4*time+8*yy);y<=min(y_size-5+4*time, 4*time+8*yy+7);y++) {
-              f_1_0(damp_vec,x_size,x-4*time,y_size,y-4*time,z_size,zz,m_vec,u_vec,time_size,time);
-            }
-          }
+    #pragma omp parallel
+    {
+      /* Flush denormal numbers to zero in hardware */
+      _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+      _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+      #pragma omp for schedule(static)
+      for (int x = 4; x < x_size - 4; x += 1)
+      {
+        for (int y = 4; y < y_size - 4; y += 1)
+        {
+          #pragma noinline
+          f_1_0(damp_vec,x_size,x,y_size,y,z_size,m_vec,u_vec,time_size,time);
         }
       }
     }
-      gettimeofday(&end_loop_x_0, NULL);
-      timings->loop_x_0 += (double)(end_loop_x_0.tv_sec-start_loop_x_0.tv_sec)+(double)(end_loop_x_0.tv_usec-start_loop_x_0.tv_usec)/1000000;
-      struct timeval start_loop_p_src_1, end_loop_p_src_1;
-      gettimeofday(&start_loop_p_src_1, NULL);
-      /* noinline? */
-      f_1_1(m_vec,x_size,y_size,z_size,src_vec,time_size,time,src_coords_vec,d_size,u_vec);
-      gettimeofday(&end_loop_p_src_1, NULL);
-      timings->loop_p_src_1 += (double)(end_loop_p_src_1.tv_sec-start_loop_p_src_1.tv_sec)+(double)(end_loop_p_src_1.tv_usec-start_loop_p_src_1.tv_usec)/1000000;
-      struct timeval start_loop_p_rec_2, end_loop_p_rec_2;
-      gettimeofday(&start_loop_p_rec_2, NULL);
-      /* noinline? */
-      f_1_2(rec_vec,time_size,time,rec_coords_vec,d_size,u_vec,x_size,y_size,z_size);
-      gettimeofday(&end_loop_p_rec_2, NULL);
-      timings->loop_p_rec_2 += (double)(end_loop_p_rec_2.tv_sec-start_loop_p_rec_2.tv_sec)+(double)(end_loop_p_rec_2.tv_usec-start_loop_p_rec_2.tv_usec)/1000000;
-    }
+    gettimeofday(&end_loop_x_0, NULL);
+    timings->loop_x_0 += (double)(end_loop_x_0.tv_sec-start_loop_x_0.tv_sec)+(double)(end_loop_x_0.tv_usec-start_loop_x_0.tv_usec)/1000000;
+    struct timeval start_loop_p_src_1, end_loop_p_src_1;
+    gettimeofday(&start_loop_p_src_1, NULL);
+    #pragma noinline
+    f_1_1(m_vec,x_size,y_size,z_size,src_vec,time_size,time,src_coords_vec,d_size,u_vec);
+    gettimeofday(&end_loop_p_src_1, NULL);
+    timings->loop_p_src_1 += (double)(end_loop_p_src_1.tv_sec-start_loop_p_src_1.tv_sec)+(double)(end_loop_p_src_1.tv_usec-start_loop_p_src_1.tv_usec)/1000000;
+    struct timeval start_loop_p_rec_2, end_loop_p_rec_2;
+    gettimeofday(&start_loop_p_rec_2, NULL);
+    #pragma noinline
+    f_1_2(rec_vec,time_size,time,rec_coords_vec,d_size,u_vec,x_size,y_size,z_size);
+    gettimeofday(&end_loop_p_rec_2, NULL);
+    timings->loop_p_rec_2 += (double)(end_loop_p_rec_2.tv_sec-start_loop_p_rec_2.tv_sec)+(double)(end_loop_p_rec_2.tv_usec-start_loop_p_rec_2.tv_usec)/1000000;
+  }
   return 0;
 }

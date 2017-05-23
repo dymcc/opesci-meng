@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "stdlib.h"
+#include "stdio.h"
 #include "math.h"
 #include "sys/time.h"
 #include "xmmintrin.h"
@@ -10,10 +11,12 @@
 #define max(x,y)    ((x) > (y) ? (x) : (y))
 #define min(x,y)    ((x) < (y) ? (x) : (y))
 
+#define TILE_SIZE 32
 #define X_TILE_SIZE 16
 #define Y_TILE_SIZE 16
 #define Z_TILE_SIZE 16
-#define SKEW 4*time
+#define SKFACTOR 4
+#define SKEW SKFACTOR*time
 
 struct profiler
 {
@@ -28,8 +31,8 @@ void f_1_0(float *restrict damp_vec, const int x_size, const int x, const int y_
   float (*restrict m)[y_size][z_size] __attribute__((aligned(64))) = (float (*)[y_size][z_size]) m_vec;
   float (*restrict u)[x_size][y_size][z_size] __attribute__((aligned(64))) = (float (*)[x_size][y_size][z_size]) u_vec;
   #pragma omp simd
-  for (int z=max(4*time+4,4*time+8*zz);z<=min(z_size-5+4*time, 4*time+8*zz+7);z++) {
-    u[time + 1][x][y][z-4*time] = ((3.04F*damp[x][y][z-4*time] - 2*m[x][y][z-4*time])*u[time - 1][x][y][z-4*time] - 8.25142857142857e-5F*(u[time][x][y][z-4*time - 4] + u[time][x][y][z-4*time + 4] + u[time][x][y - 4][z-4*time] + u[time][x][y + 4][z-4*time] + u[time][x - 4][y][z-4*time] + u[time][x + 4][y][z-4*time]) + 1.17353650793651e-3F*(u[time][x][y][z-4*time - 3] + u[time][x][y][z-4*time + 3] + u[time][x][y - 3][z-4*time] + u[time][x][y + 3][z-4*time] + u[time][x - 3][y][z-4*time] + u[time][x + 3][y][z-4*time]) - 9.2416e-3F*(u[time][x][y][z-4*time - 2] + u[time][x][y][z-4*time + 2] + u[time][x][y - 2][z-4*time] + u[time][x][y + 2][z-4*time] + u[time][x - 2][y][z-4*time] + u[time][x + 2][y][z-4*time]) + 7.39328e-2F*(u[time][x][y][z-4*time - 1] + u[time][x][y][z-4*time + 1] + u[time][x][y - 1][z-4*time] + u[time][x][y + 1][z-4*time] + u[time][x - 1][y][z-4*time] + u[time][x + 1][y][z-4*time]) + 4*m[x][y][z-4*time]*u[time][x][y][z-4*time] - 3.94693333333333e-1F*u[time][x][y][z-4*time])/(3.04F*damp[x][y][z-4*time] + 2*m[x][y][z-4*time]);
+  for (int z=max(SKEW+4,SKEW+TILE_SIZE*zz);z<=min(z_size-SKFACTOR-1+SKEW, SKEW+TILE_SIZE*zz+TILE_SIZE-1);z++) {
+    u[time + 1][x][y][z-SKEW] = ((3.04F*damp[x][y][z-SKEW] - 2*m[x][y][z-SKEW])*u[time - 1][x][y][z-SKEW] - 8.25142857142857e-5F*(u[time][x][y][z-SKEW - 4] + u[time][x][y][z-SKEW + 4] + u[time][x][y - 4][z-SKEW] + u[time][x][y + 4][z-SKEW] + u[time][x - 4][y][z-SKEW] + u[time][x + 4][y][z-SKEW]) + 1.17353650793651e-3F*(u[time][x][y][z-SKEW - 3] + u[time][x][y][z-SKEW + 3] + u[time][x][y - 3][z-SKEW] + u[time][x][y + 3][z-SKEW] + u[time][x - 3][y][z-SKEW] + u[time][x + 3][y][z-SKEW]) - 9.2416e-3F*(u[time][x][y][z-SKEW - 2] + u[time][x][y][z-SKEW + 2] + u[time][x][y - 2][z-SKEW] + u[time][x][y + 2][z-SKEW] + u[time][x - 2][y][z-SKEW] + u[time][x + 2][y][z-SKEW]) + 7.39328e-2F*(u[time][x][y][z-SKEW - 1] + u[time][x][y][z-SKEW + 1] + u[time][x][y - 1][z-SKEW] + u[time][x][y + 1][z-SKEW] + u[time][x - 1][y][z-SKEW] + u[time][x + 1][y][z-SKEW]) + 4*m[x][y][z-SKEW]*u[time][x][y][z-SKEW] - 3.94693333333333e-1F*u[time][x][y][z-SKEW])/(3.04F*damp[x][y][z-SKEW] + 2*m[x][y][z-SKEW]);
   }
 }
 void f_1_1(float *restrict m_vec, const int x_size, const int y_size, const int z_size, float *restrict src_vec, const int time_size, const int time, float *restrict src_coords_vec, const int d_size, float *restrict u_vec)
@@ -75,6 +78,7 @@ void f_1_2(float *restrict rec_vec, const int time_size, const int time, float *
 
 int Forward(float *restrict damp_vec, float *restrict m_vec, float *restrict rec_vec, float *restrict rec_coords_vec, float *restrict src_vec, float *restrict src_coords_vec, float *restrict u_vec, const int d_size, const int time_size, const int x_size, const int y_size, const int z_size, struct profiler *timings)
 {
+  /*printf("%d, %d", x_size, TILE_SIZE);*/
   float (*restrict damp)[y_size][z_size] __attribute__((aligned(64))) = (float (*)[y_size][z_size]) damp_vec;
   float (*restrict m)[y_size][z_size] __attribute__((aligned(64))) = (float (*)[y_size][z_size]) m_vec;
   float (*restrict rec)[101] __attribute__((aligned(64))) = (float (*)[101]) rec_vec;
@@ -83,22 +87,30 @@ int Forward(float *restrict damp_vec, float *restrict m_vec, float *restrict rec
   float (*restrict src_coords)[d_size] __attribute__((aligned(64))) = (float (*)[d_size]) src_coords_vec;
   float (*restrict u)[x_size][y_size][z_size] __attribute__((aligned(64))) = (float (*)[x_size][y_size][z_size]) u_vec;
   /* Flush denormal numbers to zero in hardware */
-  _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
-  _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-  int time, xx, yy, zz, x, y, z;
-  for (time=1;time<=81;time++) {
+
+  int ub = (x_size-8)/TILE_SIZE;
+  for (int time=1;time<=81;time++) {
     struct timeval start_loop_x_0, end_loop_x_0;
     gettimeofday(&start_loop_x_0, NULL);
-    for (xx=0;xx<=5;xx++) {
-      for (yy=0;yy<=5;yy++) {
-        for (zz=0;zz<=5;zz++) {
-          for (x=max(4*time+4,4*time+8*xx);x<=min(x_size-5+4*time, 4*time+8*xx+7);x++) {
-            for (y=max(4*time+4,4*time+8*yy);y<=min(y_size-5+4*time, 4*time+8*yy+7);y++) {
-              f_1_0(damp_vec,x_size,x-4*time,y_size,y-4*time,z_size,zz,m_vec,u_vec,time_size,time);
+    #pragma omp parallel
+    {
+        _MM_SET_DENORMALS_ZERO_MODE(_MM_DENORMALS_ZERO_ON);
+        _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+        for (int xx=0;xx<=ub;xx++) {
+            for (int yy=0;yy<=ub;yy++) {
+                for (int zz=0;zz<=ub;zz++) {
+                    #pragma omp for schedule(static)
+                    for (int x=max(SKEW+4,SKEW+TILE_SIZE*xx);x<=min(x_size-SKFACTOR-1+SKEW, SKEW+TILE_SIZE*xx+TILE_SIZE-1);x++) {
+                        for (int y=max(SKEW+4,SKEW+TILE_SIZE*yy);y<=min(y_size-SKFACTOR-1+SKEW, SKEW+TILE_SIZE*yy+TILE_SIZE-1);y++) {
+                            for (int z=max(SKEW+4,SKEW+TILE_SIZE*zz);z<=min(z_size-SKFACTOR-1+SKEW, SKEW+TILE_SIZE*zz+TILE_SIZE-1);z++) {
+                                u[time + 1][x-SKEW][y-SKEW][z-SKEW] = ((3.04F*damp[x-SKEW][y-SKEW][z-SKEW] - 2*m[x-SKEW][y-SKEW][z-SKEW])*u[time - 1][x-SKEW][y-SKEW][z-SKEW] - 8.25142857142857e-5F*(u[time][x-SKEW][y-SKEW][z-SKEW - 4] + u[time][x-SKEW][y-SKEW][z-SKEW + 4] + u[time][x-SKEW][y-SKEW - 4][z-SKEW] + u[time][x-SKEW][y-SKEW + 4][z-SKEW] + u[time][x-SKEW - 4][y-SKEW][z-SKEW] + u[time][x-SKEW + 4][y-SKEW][z-SKEW]) + 1.17353650793651e-3F*(u[time][x-SKEW][y-SKEW][z-SKEW - 3] + u[time][x-SKEW][y-SKEW][z-SKEW + 3] + u[time][x-SKEW][y-SKEW - 3][z-SKEW] + u[time][x-SKEW][y-SKEW + 3][z-SKEW] + u[time][x-SKEW - 3][y-SKEW][z-SKEW] + u[time][x-SKEW + 3][y-SKEW][z-SKEW]) - 9.2416e-3F*(u[time][x-SKEW][y-SKEW][z-SKEW - 2] + u[time][x-SKEW][y-SKEW][z-SKEW + 2] + u[time][x-SKEW][y-SKEW - 2][z-SKEW] + u[time][x-SKEW][y-SKEW + 2][z-SKEW] + u[time][x-SKEW - 2][y-SKEW][z-SKEW] + u[time][x-SKEW + 2][y-SKEW][z-SKEW]) + 7.39328e-2F*(u[time][x-SKEW][y-SKEW][z-SKEW - 1] + u[time][x-SKEW][y-SKEW][z-SKEW + 1] + u[time][x-SKEW][y-SKEW - 1][z-SKEW] + u[time][x-SKEW][y-SKEW + 1][z-SKEW] + u[time][x-SKEW - 1][y-SKEW][z-SKEW] + u[time][x-SKEW + 1][y-SKEW][z-SKEW]) + 4*m[x-SKEW][y-SKEW][z-SKEW]*u[time][x-SKEW][y-SKEW][z-SKEW] - 3.94693333333333e-1F*u[time][x-SKEW][y-SKEW][z-SKEW])/(3.04F*damp[x-SKEW][y-SKEW][z-SKEW] + 2*m[x-SKEW][y-SKEW][z-SKEW]);
+                            }
+                            /*f_1_0(damp_vec,x_size,x-SKEW,y_size,y-SKEW,z_size,zz,m_vec,u_vec,time_size,time);*/
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
       gettimeofday(&end_loop_x_0, NULL);
       timings->loop_x_0 += (double)(end_loop_x_0.tv_sec-start_loop_x_0.tv_sec)+(double)(end_loop_x_0.tv_usec-start_loop_x_0.tv_usec)/1000000;

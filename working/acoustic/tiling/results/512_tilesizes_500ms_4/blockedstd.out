@@ -1,0 +1,31 @@
+Applying Forward
+DSE: (_cse)  --> (_optimize_trigonometry)  --> (_replace_time_invariants)  --> (_factorize)  [0.27 s]
+DLE: (_avoid_denormals) --> (_create_elemental_functions) --> (_loop_blocking) --> (_simdize) --> (_ompize) [0.18 s]
+custom
+IntelCompiler: compiled /tmp/devito-1000/ae6d383b3c8981adbe2fb33937e086b7fa4d8bc3.c [0.38 s]
+OMP: Info #204: KMP_AFFINITY: decoding x2APIC ids.
+OMP: Info #202: KMP_AFFINITY: Affinity capable, using global cpuid leaf 11 info
+OMP: Info #154: KMP_AFFINITY: Initial OS proc set respected: {0,1,2,3,4,5,6,7}
+OMP: Info #156: KMP_AFFINITY: 8 available OS procs
+OMP: Info #157: KMP_AFFINITY: Uniform topology
+OMP: Info #179: KMP_AFFINITY: 1 packages x 4 cores/pkg x 2 threads/core (4 total cores)
+OMP: Info #206: KMP_AFFINITY: OS proc to physical thread map:
+OMP: Info #171: KMP_AFFINITY: OS proc 0 maps to package 0 core 0 thread 0 
+OMP: Info #171: KMP_AFFINITY: OS proc 4 maps to package 0 core 0 thread 1 
+OMP: Info #171: KMP_AFFINITY: OS proc 1 maps to package 0 core 1 thread 0 
+OMP: Info #171: KMP_AFFINITY: OS proc 5 maps to package 0 core 1 thread 1 
+OMP: Info #171: KMP_AFFINITY: OS proc 2 maps to package 0 core 2 thread 0 
+OMP: Info #171: KMP_AFFINITY: OS proc 6 maps to package 0 core 2 thread 1 
+OMP: Info #171: KMP_AFFINITY: OS proc 3 maps to package 0 core 3 thread 0 
+OMP: Info #171: KMP_AFFINITY: OS proc 7 maps to package 0 core 3 thread 1 
+OMP: Info #144: KMP_AFFINITY: Threads may migrate across 1 innermost levels of machine
+OMP: Info #242: KMP_AFFINITY: pid 14747 tid 14747 thread 0 bound to OS proc set {0,4}
+OMP: Info #242: KMP_AFFINITY: pid 14747 tid 14784 thread 2 bound to OS proc set {2,6}
+OMP: Info #242: KMP_AFFINITY: pid 14747 tid 14783 thread 1 bound to OS proc set {1,5}
+OMP: Info #242: KMP_AFFINITY: pid 14747 tid 14785 thread 3 bound to OS proc set {3,7}
+=========================================================================================
+Section loop_p_src_1<164,1> with OI=2.38 computed in 0.000 s [Perf: 0.24 GFlops/s]
+Section loop_p_rec_2<164,101> with OI=8.20 computed in 0.001 s [Perf: 1.64 GFlops/s]
+Section main<164,528,528,528> with OI=2.49 computed in 45.833 s [Perf: 21.59 GFlops/s]
+=========================================================================================
+8 8
