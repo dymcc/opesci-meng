@@ -28,7 +28,7 @@ void f_1_0(float *restrict damp_vec, const int x_size, const int x, const int y_
   float (*restrict m)[y_size][z_size] __attribute__((aligned(64))) = (float (*)[y_size][z_size]) m_vec;
   float (*restrict u)[x_size][y_size][z_size] __attribute__((aligned(64))) = (float (*)[x_size][y_size][z_size]) u_vec;
   #pragma omp simd
-  for (int z=max(4*time+4,4*time+8*zz);z<=min(z_size-5+4*time, 4*time+8*zz+7);z++) {
+  for (int z=max(4*time+4,4*time+27*zz);z<=min(4*time+211,4*time+27*zz+26);z++) {
     u[time + 1][x][y][z-4*time] = ((3.04F*damp[x][y][z-4*time] - 2*m[x][y][z-4*time])*u[time - 1][x][y][z-4*time] - 8.25142857142857e-5F*(u[time][x][y][z-4*time - 4] + u[time][x][y][z-4*time + 4] + u[time][x][y - 4][z-4*time] + u[time][x][y + 4][z-4*time] + u[time][x - 4][y][z-4*time] + u[time][x + 4][y][z-4*time]) + 1.17353650793651e-3F*(u[time][x][y][z-4*time - 3] + u[time][x][y][z-4*time + 3] + u[time][x][y - 3][z-4*time] + u[time][x][y + 3][z-4*time] + u[time][x - 3][y][z-4*time] + u[time][x + 3][y][z-4*time]) - 9.2416e-3F*(u[time][x][y][z-4*time - 2] + u[time][x][y][z-4*time + 2] + u[time][x][y - 2][z-4*time] + u[time][x][y + 2][z-4*time] + u[time][x - 2][y][z-4*time] + u[time][x + 2][y][z-4*time]) + 7.39328e-2F*(u[time][x][y][z-4*time - 1] + u[time][x][y][z-4*time + 1] + u[time][x][y - 1][z-4*time] + u[time][x][y + 1][z-4*time] + u[time][x - 1][y][z-4*time] + u[time][x + 1][y][z-4*time]) + 4*m[x][y][z-4*time]*u[time][x][y][z-4*time] - 3.94693333333333e-1F*u[time][x][y][z-4*time])/(3.04F*damp[x][y][z-4*time] + 2*m[x][y][z-4*time]);
   }
 }
@@ -89,11 +89,11 @@ int Forward(float *restrict damp_vec, float *restrict m_vec, float *restrict rec
   for (time=1;time<=81;time++) {
     struct timeval start_loop_x_0, end_loop_x_0;
     gettimeofday(&start_loop_x_0, NULL);
-    for (xx=0;xx<=5;xx++) {
-      for (yy=0;yy<=5;yy++) {
-        for (zz=0;zz<=5;zz++) {
-          for (x=max(4*time+4,4*time+8*xx);x<=min(x_size-5+4*time, 4*time+8*xx+7);x++) {
-            for (y=max(4*time+4,4*time+8*yy);y<=min(y_size-5+4*time, 4*time+8*yy+7);y++) {
+    for (xx=0;xx<=7;xx++) {
+      for (yy=0;yy<=7;yy++) {
+        for (zz=0;zz<=7;zz++) {
+          for (x=max(4*time+4,4*time+27*xx);x<=min(4*time+211,4*time+27*xx+26);x++) {
+            for (y=max(4*time+4,4*time+27*yy);y<=min(4*time+211,4*time+27*yy+26);y++) {
               f_1_0(damp_vec,x_size,x-4*time,y_size,y-4*time,z_size,zz,m_vec,u_vec,time_size,time);
             }
           }
