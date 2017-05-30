@@ -1,0 +1,13 @@
+usage: benchmark.py [-h] [--bench-mode {maxperf,dse,dle}] [--arch ARCH]
+                    [-P [{acoustic,tti}]] [-c] [-o] [-d dim1 dim2 dim3]
+                    [-s spc1 spc2 spc3] [-n NBPML]
+                    [-so [SPACE_ORDER [SPACE_ORDER ...]]]
+                    [-to [TIME_ORDER [TIME_ORDER ...]]] [-t TN]
+                    [-dse [{noop,basic,factorize,approx-trigonometry,glicm,advanced} [{noop,basic,factorize,approx-trigonometry,glicm,advanced} ...]]]
+                    [-dle [{noop,basic,advanced,3D-advanced,speculative} [{noop,basic,advanced,3D-advanced,speculative} ...]]]
+                    [-a] [-cb blockDim1 blockDim2] [-r RESULTSDIR]
+                    [-p PLOTDIR] [--max_bw MAX_BW] [--max_flops MAX_FLOPS]
+                    [--point_runtime]
+                    [{run,test,bench,plot}]
+                    [{osx,gnu-noavx,gcc-4.9,clang,icpc,gcc-5,intel-mic,gcc,intel-knl,intel,gnu,icc,mic,knl,gcc-noavx}]
+benchmark.py: error: argument -d/--dimensions: expected 3 argument(s)

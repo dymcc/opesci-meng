@@ -1,0 +1,18 @@
+Applying Forward
+DSE: extract_time_invariants [flops: 58, elapsed: 0.00] >>
+     eliminate_inter_stencil_redundancies [flops: 58, elapsed: 0.00] >>
+     eliminate_intra_stencil_redundancies [flops: 57, elapsed: 0.01] >>
+     factorize [flops: 37, elapsed: 0.02] >>
+     finalize [flops: 37, elapsed: 0.00]
+     [Total elapsed: 0.04 s]
+DLE: analyze [elapsed: 0.01] >>
+     avoid_denormals [elapsed: 0.00] >>
+     simdize [elapsed: 0.07] >>
+     ompize [elapsed: 0.01]
+     [Total elapsed: 0.09 s]
+GNUCompiler: compiled /tmp/devito-1000/ec75ffebb2c0994e61676b40839326674be917f5.c [0.19 s]
+=========================================================================================
+Section loop_p_src_1<164,1> with OI=0.90 computed in 0.000 s [Perf: 0.18 GFlops/s]
+Section loop_p_rec_2<164,101> with OI=1.94 computed in 0.000 s [Perf: 4.09 GFlops/s]
+Section main<164,616,616,616> with OI=2.25 computed in 145.558 s [Perf: 9.74 GFlops/s]
+=========================================================================================

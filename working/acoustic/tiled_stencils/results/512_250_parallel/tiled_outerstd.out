@@ -1,0 +1,14 @@
+Traceback (most recent call last):
+  File "benchmark.py", line 121, in <module>
+    gflopss, oi, timings, [rec, data] = run(**parameters)
+  File "/home/dylan/masters/devito/examples/acoustic/acoustic_example.py", line 42, in run
+    model = Model(origin, spacing, dimensions, true_vp, nbpml=nbpml)
+  File "/home/dylan/masters/devito/examples/seismic/model.py", line 64, in __init__
+    self.m.data[:] = self.pad(1 / (self.vp * self.vp))
+  File "/home/dylan/masters/devito/examples/seismic/model.py", line 153, in pad
+    return np.pad(data, pad_list, 'edge')
+  File "/home/dylan/.local/lib/python2.7/site-packages/numpy/lib/arraypad.py", line 1375, in pad
+    newmat = _prepend_edge(newmat, pad_before, axis)
+  File "/home/dylan/.local/lib/python2.7/site-packages/numpy/lib/arraypad.py", line 175, in _prepend_edge
+    axis=axis)
+MemoryError

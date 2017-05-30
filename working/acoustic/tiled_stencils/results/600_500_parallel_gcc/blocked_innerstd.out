@@ -1,0 +1,33 @@
+Applying Forward
+DSE: extract_time_invariants [flops: 58, elapsed: 0.00] >>
+     eliminate_inter_stencil_redundancies [flops: 58, elapsed: 0.00] >>
+     eliminate_intra_stencil_redundancies [flops: 57, elapsed: 0.01] >>
+     factorize [flops: 37, elapsed: 0.02] >>
+     finalize [flops: 37, elapsed: 0.00]
+     [Total elapsed: 0.04 s]
+DLE: analyze [elapsed: 0.01] >>
+     avoid_denormals [elapsed: 0.00] >>
+     loop_blocking [elapsed: 0.10] >>
+     simdize [elapsed: 0.07] >>
+     ompize [elapsed: 0.01]
+     [Total elapsed: 0.19 s]
+custom
+/tmp/devito-1000/5c90800eab5ba84fcf6f6eef0f1f369fe11df7fd.c: In function ‘Forward’:
+/tmp/devito-1000/5c90800eab5ba84fcf6f6eef0f1f369fe11df7fd.c:47:0: warning: ignoring #pragma ivdep  [-Wunknown-pragmas]
+               #pragma ivdep
+ 
+/tmp/devito-1000/5c90800eab5ba84fcf6f6eef0f1f369fe11df7fd.c:69:0: warning: ignoring #pragma ivdep  [-Wunknown-pragmas]
+           #pragma ivdep
+ 
+/tmp/devito-1000/5c90800eab5ba84fcf6f6eef0f1f369fe11df7fd.c:89:0: warning: ignoring #pragma ivdep  [-Wunknown-pragmas]
+           #pragma ivdep
+ 
+/tmp/devito-1000/5c90800eab5ba84fcf6f6eef0f1f369fe11df7fd.c:109:0: warning: ignoring #pragma ivdep  [-Wunknown-pragmas]
+           #pragma ivdep
+ 
+GNUCompiler: compiled /tmp/devito-1000/5c90800eab5ba84fcf6f6eef0f1f369fe11df7fd.c [0.55 s]
+=========================================================================================
+Section loop_p_src_1<164,1> with OI=0.90 computed in 0.000 s [Perf: 0.21 GFlops/s]
+Section loop_p_rec_2<164,101> with OI=1.94 computed in 0.000 s [Perf: 4.38 GFlops/s]
+Section main<164,616,616,616> with OI=2.25 computed in 72.271 s [Perf: 19.63 GFlops/s]
+=========================================================================================
