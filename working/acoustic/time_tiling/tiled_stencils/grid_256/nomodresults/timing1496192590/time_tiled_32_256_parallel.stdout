@@ -1,0 +1,32 @@
+Applying Forward
+DSE: extract_time_invariants [flops: 58, elapsed: 0.00] >>
+     eliminate_inter_stencil_redundancies [flops: 58, elapsed: 0.00] >>
+     eliminate_intra_stencil_redundancies [flops: 57, elapsed: 0.01] >>
+     factorize [flops: 37, elapsed: 0.02] >>
+     finalize [flops: 37, elapsed: 0.00]
+     [Total elapsed: 0.04 s]
+DLE: analyze [elapsed: 0.00] >>
+     avoid_denormals [elapsed: 0.00] >>
+     simdize [elapsed: 0.06] >>
+     ompize [elapsed: 0.00]
+     [Total elapsed: 0.06 s]
+custom
+IntelCompiler: compiled /tmp/devito-1000/fabffff36e1a1dfb0d6421b08304b331cb40b5b3.c [4.11 s]
+OMP: Info #204: KMP_AFFINITY: decoding x2APIC ids.
+OMP: Info #202: KMP_AFFINITY: Affinity capable, using global cpuid leaf 11 info
+OMP: Info #154: KMP_AFFINITY: Initial OS proc set respected: {0,1,2,3}
+OMP: Info #156: KMP_AFFINITY: 4 available OS procs
+OMP: Info #157: KMP_AFFINITY: Uniform topology
+OMP: Info #179: KMP_AFFINITY: 1 packages x 4 cores/pkg x 1 threads/core (4 total cores)
+OMP: Info #206: KMP_AFFINITY: OS proc to physical thread map:
+OMP: Info #171: KMP_AFFINITY: OS proc 0 maps to package 0 core 0 
+OMP: Info #171: KMP_AFFINITY: OS proc 1 maps to package 0 core 1 
+OMP: Info #171: KMP_AFFINITY: OS proc 2 maps to package 0 core 2 
+OMP: Info #171: KMP_AFFINITY: OS proc 3 maps to package 0 core 3 
+OMP: Info #242: KMP_AFFINITY: pid 31302 tid 31302 thread 0 bound to OS proc set {0}
+OMP: Info #242: KMP_AFFINITY: pid 31302 tid 31342 thread 2 bound to OS proc set {2}
+OMP: Info #242: KMP_AFFINITY: pid 31302 tid 31341 thread 1 bound to OS proc set {1}
+OMP: Info #242: KMP_AFFINITY: pid 31302 tid 31343 thread 3 bound to OS proc set {3}
+=========================================================================================
+Section main<82,272,272,272> with OI=2.19 computed in 4.762 s [Perf: 12.82 GFlops/s]
+=========================================================================================

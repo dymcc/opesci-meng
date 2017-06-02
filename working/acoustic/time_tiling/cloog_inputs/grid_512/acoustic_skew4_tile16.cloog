@@ -1,0 +1,57 @@
+
+# Parametric CLooG Input file for 10x10x10 devito acoustic stencil
+# Skew factor of 1
+# Tile size ts x ts x ts
+# language: C
+c
+
+# Parameters & their constraints
+4 6
+# tb ub  lb ts  1 (time upper bound, space upper and lowerbound, tile size)
+1  1  0  0  0 -3
+0  0  1  0  0 -532
+0  0  0  1  0 -4
+0  0  0  0  1 -16
+1
+time_size ub lb ts
+
+# Number of statements
+1
+14 13
+#  t xx  yy zz x  y  z tb ub lb ts  1
+1  1  0  0  0  0  0  0  0  0  0  0 -1
+1 -1  0  0  0  0  0  0  1  0  0  0 -2
+#  xx & x
+1  0 -16  0  0  1  0  0  0  0  0  0  0
+1  0  16  0  0 -1  0  0  0  0  0  1 -1
+1  0  0   0  0  1  0  0  0  0 -1  0  0
+1  0  0   0  0 -1  0  0  0  1 -1  0 -1
+#  yy & y
+1  0  0 -16  0  0  1  0  0  0  0  0  0
+1  0  0  16  0  0 -1  0  0  0  0  1 -1
+1  0  0  0   0  0  1  0  0  0 -1  0  0
+1  0  0  0   0  0 -1  0  0  1 -1  0 -1
+#  zz & z
+1  0  0  0 -16  0  0  1  0  0  0  0  0
+1  0  0  0  16  0  0 -1  0  0  0  1 -1
+1  0  0  0  0   0  0  1  0  0 -1  0  0
+1  0  0  0  0   0  0 -1  0  1 -1  0 -1
+0 0 0
+
+# we want cloog to set the iterator names
+0
+
+# Number of scattering functions
+1
+7 20
+# c1 c2 c3 c4 c5 c6 c7  t xx yy zz  x  y  z tb ub lb ts  1
+0  1  0  0  0  0  0  0  0 -1  0  0  0  0  0  0  0  0  0  0
+0  0  1  0  0  0  0  0  0  0 -1  0  0  0  0  0  0  0  0  0
+0  0  0  1  0  0  0  0  0  0  0 -1  0  0  0  0  0  0  0  0
+0  0  0  0  1  0  0  0 -1  0  0  0  0  0  0  0  0  0  0  0
+0  0  0  0  0  1  0  0 -4  0  0  0 -1  0  0  0  0  0  0  0
+0  0  0  0  0  0  1  0 -4  0  0  0  0 -1  0  0  0  0  0  0
+0  0  0  0  0  0  0  1 -4  0  0  0  0  0 -1  0  0  0  0  0
+
+1
+xx yy zz time x y z
